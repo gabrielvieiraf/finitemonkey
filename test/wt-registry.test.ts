@@ -279,7 +279,7 @@ describe("worktree registry: wt new", () => {
     assert.deepEqual(placeProblems("/tmp/repo/.claude/worktrees/f5", { ...context, mainRoot: "/tmp/repo" }), []);
     assert.equal(
       toPosixPath(defaultPlace(toAbsolutePath("/mnt/c/Users/ana/OneDrive/app"), "/home/ana", "f6")),
-      toPosixPath(toAbsolutePath("/home/ana/.fm/worktrees/app/f6")),
+      toPosixPath(toAbsolutePath("/home/ana/.finitemonkey/worktrees/app/f6")),
     );
   });
 

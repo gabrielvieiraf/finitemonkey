@@ -111,7 +111,7 @@ describe("perfil: disagreement is answered with a practical question", () => {
     assert.equal(said.code, 0, said.stderr);
     assert.match(said.stdout, /One practical question about backend and data/);
     assert.match(said.stdout, /same payment confirmation twice/);
-    assert.match(said.stdout, /finitemonkey perfil answer backend <a\|b\|c>/);
+    assert.match(said.stdout, /fm perfil answer backend <a\|b\|c>/);
     assert.doesNotMatch(said.stdout, /wrong|you do not know|não sabe/i);
     const shown = await cliJson(["perfil"], { cwd: repo.root, runtime: runtime() });
     assert.equal(level(shown.body, "backend", "knowledge"), "intermediate");

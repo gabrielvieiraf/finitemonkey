@@ -56,9 +56,9 @@ export const STAGE3_FOOTPRINT_TEXT: Readonly<
     es: "`fm onboard` ejecuta los comandos de build, test, lint y typecheck que encuentra en los manifiestos y en AGENTS.md o CLAUDE.md, con límite de tiempo, y guarda en `onboard.json` y en su propio bloque de AGENTS.md solo los que funcionaron, más el número de posibles secretos encontrados por un único escaneo del historial de git. Los comandos que publican, instalan o se quedan corriendo no se ejecutan.",
   },
   "store-mirror": {
-    en: "A signed copy of the approvals, incidents and backups in `.fm/`, kept inside .git and under `~/.fm/projects/<id>/` and copied back when `.fm/` is deleted, and a git note per gate run with the running hash of the evidence ledger (notes are not pushed unless you push them).",
+    en: "A signed copy of the approvals, incidents and backups in `.fm/`, kept inside .git and under `~/.finitemonkey/projects/<id>/` and copied back when `.fm/` is deleted, and a git note per gate run with the running hash of the evidence ledger (notes are not pushed unless you push them).",
     "pt-BR":
-      "Uma cópia assinada das aprovações, dos incidentes e dos backups de `.fm/`, guardada dentro do .git e em `~/.fm/projects/<id>/` e copiada de volta quando `.fm/` é apagado, e uma nota do git por rodada do gate com o hash acumulado do registro de evidências (as notas não sobem a menos que você as envie).",
-    es: "Una copia firmada de las aprobaciones, los incidentes y las copias de seguridad de `.fm/`, guardada dentro de .git y en `~/.fm/projects/<id>/` y copiada de vuelta cuando se borra `.fm/`, y una nota de git por ejecución del gate con el hash acumulado del registro de evidencias (las notas no se suben salvo que tú las envíes).",
+      "Uma cópia assinada das aprovações, dos incidentes e dos backups de `.fm/`, guardada dentro do .git e em `~/.finitemonkey/projects/<id>/` e copiada de volta quando `.fm/` é apagado, e uma nota do git por rodada do gate com o hash acumulado do registro de evidências (as notas não sobem a menos que você as envie).",
+    es: "Una copia firmada de las aprobaciones, los incidentes y las copias de seguridad de `.fm/`, guardada dentro de .git y en `~/.finitemonkey/projects/<id>/` y copiada de vuelta cuando se borra `.fm/`, y una nota de git por ejecución del gate con el hash acumulado del registro de evidencias (las notas no se suben salvo que tú las envíes).",
   },
 };

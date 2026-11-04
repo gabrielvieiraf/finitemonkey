@@ -5,7 +5,7 @@
   "request": "bring back the client side cart",
   "information": "goals.yml lists client side cart as a stated rejected option",
   "files": {
-    ".finitemonkey/goals.yml": "rejected:\n  - id: r1\n    text: client side cart\n    origin: stated\n"
+    ".fm/goals.yml": "rejected:\n  - id: r1\n    text: client side cart\n    origin: stated\n"
   },
   "contract": "id: work\ngoal: bring back the client side cart\nsize: M\nscope:\n  paths: [src/checkout/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
   "change": {},

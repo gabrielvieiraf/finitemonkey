@@ -150,7 +150,7 @@ describe("gen lint merges an existing config", () => {
       assert.equal(run.code, 0, run.stdout);
       const config = readFileSync(join(project.root, "eslint.config.mjs"), "utf8");
       assert.match(config, /eqeqeq/);
-      assert.match(config, /\.\.\.fm/);
+      assert.match(config, /\.\.\.finitemonkey/);
       assert.deepEqual(await ruleIds(project, "src/eq.ts", "export const same = (a: number) => a == 1;\n"), ["eqeqeq"]);
       assert.ok(
         (await ruleIds(project, "src/c.ts", "// note\nexport const c = 1;\n")).includes("finitemonkey/no-comments"),
@@ -170,7 +170,7 @@ describe("gen lint merges an existing config", () => {
     ]) {
       const merged = mergeEslintConfig(text) ?? "";
       assert.match(merged, /^import \{ finitemonkey \}/m);
-      assert.match(merged, /\.\.\.fm,\n[\])]/);
+      assert.match(merged, /\.\.\.finitemonkey,\n[\])]/);
     }
     assert.equal(mergeEslintConfig("module.exports = [];\n"), undefined);
   });

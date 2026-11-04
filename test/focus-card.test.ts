@@ -94,7 +94,7 @@ describe("focus-card hooks", () => {
     const edit = (file: string) =>
       fireHook(repo, "PostToolUse", { tool_name: "Edit", tool_input: { file_path: `${repo.root}/${file}` } });
     assert.equal(contextOf(await edit("src/billing/total.ts")), "");
-    assert.match(contextOf(await edit("docs/ideas.md")), /outside the scope of task billing.*finitemonkey park/);
+    assert.match(contextOf(await edit("docs/ideas.md")), /outside the scope of task billing.*fm park/);
     assert.equal(contextOf(await edit("docs/other.md")), "");
   });
 

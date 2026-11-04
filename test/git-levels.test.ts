@@ -13,7 +13,7 @@ import { bash, git, hook, tempRepo, write } from "./git-support.js";
 import { cli, execResult, fakeRuntime } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/app");
-const HOME_PROFILE = toAbsolutePath("/home/test/.fm/profile.yml");
+const HOME_PROFILE = toAbsolutePath("/home/test/.finitemonkey/profile.yml");
 
 const githubRuntime = (calls: ExecRequest[], protectedBranch: boolean) =>
   fakeRuntime({

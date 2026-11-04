@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { DATA_DIR_NAME, LEGACY_DATA_DIR } from "./data-dir-name.js";
+import { FOOTPRINT } from "./footprint.js";
 
 export { DATA_DIR_NAME, DATA_DIR_NAMES, HOME_DATA_DIR, LEGACY_DATA_DIR } from "./data-dir-name.js";
 
@@ -8,24 +9,12 @@ export const GITIGNORE_LINE = `${DATA_DIR_NAME}/*`;
 export const GITIGNORE_PROBE = `${DATA_DIR_NAME}/state.json`;
 export const GITIGNORE_MARK = join("cache", "gitignore-checked");
 
-const MARKERS: ReadonlySet<string> = new Set([
-  "state.json",
-  "trust.json",
-  "log.jsonl",
-  "config.yml",
-  "lock.json",
-  "policy.yml",
-  "rules.yml",
-  "tasks",
-  "evidence",
-  "cache",
-  "allow",
-  "runtime",
-  "locks",
-  "backups",
-  "reports",
-  "merge-dropped.json",
-]);
+const MARKERS: ReadonlySet<string> = new Set(
+  FOOTPRINT.flatMap((entry) => entry.targets)
+    .filter((target) => target.startsWith(`${DATA_DIR_NAME}/`))
+    .map((target) => target.slice(DATA_DIR_NAME.length + 1).split("/")[0] ?? "")
+    .filter((name) => name !== ""),
+);
 
 export type EntryKind = "dir" | "file" | "missing";
 

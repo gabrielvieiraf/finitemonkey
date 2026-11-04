@@ -5,7 +5,7 @@ export interface UnitRefs {
 }
 
 const ISSUE = /(?<![\w/&])#(\d{1,6})\b/g;
-const COMMAND = /\bfinitemonkey\s+([a-z][a-z0-9-]*(?:\s+[a-z][a-z0-9-]*){0,2})/g;
+const COMMAND = /\b(?:finitemonkey|fm)\s+([a-z][a-z0-9-]*(?:\s+[a-z][a-z0-9-]*){0,2})/g;
 const TICKED = /`([a-z][a-z0-9-]*)`/g;
 
 const unique = <T>(items: readonly T[]): readonly T[] => [...new Set(items)];

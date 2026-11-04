@@ -61,11 +61,11 @@ export const spawnClaude = (invocation: Invocation): Promise<RunOutcome> =>
     });
   });
 
-const PENDING = join(".finitemonkey", "cache", "conceitos-pending.txt");
+const PENDING = ["cache", "conceitos-pending.txt"] as const;
 
 export const settleState = async (workdir: string, limitMs = 20_000, stepMs = 250): Promise<void> => {
   const until = Date.now() + limitMs;
-  while (existsSync(join(workdir, PENDING)) && Date.now() < until) {
+  while ([".fm", ".finitemonkey"].some((dir) => existsSync(join(workdir, dir, ...PENDING))) && Date.now() < until) {
     await new Promise((resolve) => setTimeout(resolve, stepMs));
   }
 };

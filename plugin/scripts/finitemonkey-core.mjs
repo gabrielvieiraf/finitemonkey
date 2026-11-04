@@ -9,28 +9,298 @@ var LEGACY_DATA_DIR = ".finitemonkey";
 var HOME_DATA_DIR = ".finitemonkey";
 var DATA_DIR_NAMES = [DATA_DIR_NAME, LEGACY_DATA_DIR];
 
+// src/core/footprint.ts
+var FOOTPRINT = [
+  { id: "hook-input", kind: "reads", targets: ["stdin"] },
+  {
+    id: "claude-settings",
+    kind: "reads",
+    targets: [".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json"]
+  },
+  {
+    id: "instructions",
+    kind: "reads",
+    targets: ["CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", ".claude/rules/", ".claudeignore"]
+  },
+  { id: "session-logs", kind: "reads", targets: ["~/.claude/projects/"] },
+  { id: "hook-sources", kind: "reads", targets: ["~/.claude/plugins/", "~/.claude/debug/latest"] },
+  { id: "git", kind: "reads", targets: [".git/"], via: "git" },
+  { id: "changed-files", kind: "reads", targets: ["git diff"], via: "git" },
+  {
+    id: "config",
+    kind: "reads",
+    targets: [
+      ".fm/config.yml",
+      ".fm/policy.yml",
+      ".fm/briefing.md",
+      ".fm/look.yml",
+      ".fm/appsec.yml",
+      ".fm/routes-public.yml",
+      ".fm/rules.yml",
+      ".fm/arch.yml"
+    ]
+  },
+  {
+    id: "install",
+    kind: "writes",
+    targets: [
+      ".claude/settings.json",
+      ".claude/settings.local.json",
+      ".claude/skills/verify/SKILL.md",
+      "AGENTS.md",
+      "CLAUDE.md",
+      ".gitignore",
+      ".fm/config.yml",
+      ".fm/lock.json",
+      ".fm/locks/",
+      ".fm/runtime/",
+      ".fm/backups/"
+    ]
+  },
+  { id: "data-dir", kind: "writes", targets: [".finitemonkey/", ".fm/", ".gitignore"] },
+  { id: "tasks", kind: "writes", targets: [".fm/tasks/", ".fm/state.json"] },
+  {
+    id: "evidence",
+    kind: "writes",
+    targets: [".fm/evidence/", ".fm/log.jsonl", ".fm/prod-evidence.jsonl"]
+  },
+  {
+    id: "person",
+    kind: "writes",
+    targets: [".fm/trust.json", ".fm/allow/", ".fm/cache/"]
+  },
+  {
+    id: "secrets",
+    kind: "writes",
+    targets: [".fm/findings/baseline.json", ".fm/incidents/"]
+  },
+  {
+    id: "git-safety",
+    kind: "writes",
+    targets: [
+      ".fm/git/",
+      ".fm/git-journal.jsonl",
+      ".fm/merge-dropped.json",
+      "refs/finitemonkey/backup/",
+      ".git/finitemonkey/snapshots/"
+    ]
+  },
+  {
+    id: "store-mirror",
+    kind: "writes",
+    targets: [".git/finitemonkey/mirror/", "~/.finitemonkey/projects/", "refs/notes/finitemonkey"]
+  },
+  { id: "reports", kind: "writes", targets: [".fm/reports/"] },
+  { id: "pr-scope", kind: "writes", targets: [".fm/pr/"] },
+  {
+    id: "fronts",
+    kind: "writes",
+    targets: [".fm/fronts.yml", ".fm/briefing.md", ".fm/cache/github-writes.json"]
+  },
+  { id: "profile", kind: "reads", targets: [".fm/profile.yml", "~/.finitemonkey/profile.yml"] },
+  { id: "github-ruleset", kind: "writes", targets: [".fm/github-ruleset.json"] },
+  {
+    id: "worktrees",
+    kind: "writes",
+    targets: [
+      ".git/finitemonkey/worktrees.yml",
+      ".git/finitemonkey/merges/",
+      ".git/info/exclude",
+      ".claude/worktrees/",
+      "~/.finitemonkey/worktrees/",
+      "~/.finitemonkey/archive/",
+      "~/.finitemonkey/ports/",
+      "refs/finitemonkey/archive/"
+    ]
+  },
+  { id: "creds", kind: "writes", targets: [".fm/creds.yml"] },
+  {
+    id: "supply-chain",
+    kind: "writes",
+    targets: [".fm/findings/osv.json", ".github/dependabot.yml", "renovate.json"]
+  },
+  {
+    id: "supervisor",
+    kind: "writes",
+    targets: ["$FINITEMONKEY_HOLD_DIR/<session>.hold.json"]
+  },
+  { id: "appsec", kind: "writes", targets: [".fm/semgrep/", ".fm/data-map.yml"] },
+  {
+    id: "rules",
+    kind: "writes",
+    targets: [".fm/rules-compiled.json", ".github/workflows/finitemonkey-rules.yml"]
+  },
+  { id: "look", kind: "writes", targets: [".fm/look/"] },
+  { id: "prompts", kind: "writes", targets: [".fm/prompts.jsonl"] },
+  { id: "spend", kind: "writes", targets: [".fm/spend.json", ".fm/spend-reconcile.jsonl"] },
+  { id: "plan", kind: "writes", targets: ["docs/plan/"] },
+  {
+    id: "signals",
+    kind: "writes",
+    targets: [".fm/signals.jsonl", ".fm/signals-index.json", ".fm/signals-profile.json"]
+  },
+  {
+    id: "perfil",
+    kind: "writes",
+    targets: [
+      ".fm/perfil.yml",
+      ".fm/perfil-commits.json",
+      ".fm/conceitos.yml",
+      ".fm/conceitos-events.jsonl",
+      ".fm/xray.json",
+      ".fm/probes.json"
+    ]
+  },
+  {
+    id: "concept-recognition",
+    kind: "reads",
+    targets: [".fm/conceitos-map.json", "node_modules/<package>/package.json"]
+  },
+  { id: "runs", kind: "writes", targets: [".fm/runs/"] },
+  { id: "map", kind: "writes", targets: [".fm/map.txt", ".fm/reuse.json"] },
+  { id: "review", kind: "writes", targets: [".fm/review/", ".claude/agents/verifier.md"] },
+  { id: "regression", kind: "writes", targets: [".fm/regression/"] },
+  { id: "advisor", kind: "writes", targets: [".fm/suggestions.jsonl"] },
+  { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
+  { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },
+  { id: "deps-registry", kind: "sends", targets: ["registry.npmjs.org", "pypi.org"], via: "curl" },
+  { id: "a11y-engine", kind: "sends", targets: ["registry.npmjs.org"], via: "npm" },
+  { id: "stale-registry", kind: "sends", targets: ["registry.npmjs.org"], via: "npm" },
+  { id: "look-browser", kind: "sends", targets: ["cdn.playwright.dev"], via: "playwright" },
+  { id: "look-deep", kind: "sends", targets: ["127.0.0.1"], via: "lighthouse" },
+  { id: "merge-fetch", kind: "sends", targets: ["remote of the merge target"], via: "git fetch" },
+  { id: "osv", kind: "sends", targets: ["api.osv.dev"], via: "osv-scanner" },
+  {
+    id: "secrets-live",
+    kind: "sends",
+    targets: [
+      "api.github.com",
+      "api.stripe.com",
+      "api.openai.com",
+      "api.anthropic.com",
+      "api.digitalocean.com",
+      "api.cloudflare.com",
+      "api.asaas.com",
+      "api.mailgun.net",
+      "api.sendgrid.com",
+      "gitlab.com",
+      "registry.npmjs.org",
+      "huggingface.co",
+      "sts.amazonaws.com"
+    ],
+    via: "curl"
+  },
+  { id: "deploy", kind: "sends", targets: ["deploy.version_url"], via: "curl" },
+  { id: "heavy", kind: "writes", targets: ["~/.finitemonkey/heavy/"] },
+  { id: "compile-cache", kind: "writes", targets: ["~/.finitemonkey/compile-cache/"] },
+  {
+    id: "instruction-layers",
+    kind: "reads",
+    targets: ["~/.claude/CLAUDE.md", "~/.claude/rules/", "/etc/claude-code/CLAUDE.md", "../CLAUDE.md"]
+  },
+  { id: "instructions-log", kind: "writes", targets: [".fm/instructions.jsonl"] },
+  {
+    id: "rules-propose",
+    kind: "writes",
+    targets: [".fm/rules.yml", ".fm/rule-violations.jsonl"]
+  },
+  {
+    id: "learnings",
+    kind: "writes",
+    targets: [".fm/learnings.jsonl", ".fm/cache/agent-changes.json"]
+  },
+  { id: "ownership", kind: "writes", targets: [".fm/ownership.yml"] },
+  { id: "ci-protect", kind: "writes", targets: [".fm/ci-protect.jsonl"] },
+  { id: "ci-watch", kind: "writes", targets: [".fm/ci-watch/"] },
+  { id: "infra", kind: "writes", targets: [".fm/infra.yml", ".fm/hosts.local.yml"] },
+  { id: "infra-remote", kind: "sends", targets: ["hosts.local.yml"], via: "ssh" },
+  {
+    id: "observability",
+    kind: "writes",
+    targets: ["observability/scrub.mjs", "observability/log.mjs", "observability/plan.yml"]
+  },
+  { id: "headers", kind: "sends", targets: ["headers.url"], via: "curl" },
+  { id: "deploy-drift", kind: "sends", targets: ["hosts.local.yml", "FINITEMONKEY_DEPLOY_HOST"], via: "ssh" },
+  {
+    id: "deploy-generate",
+    kind: "writes",
+    targets: [".github/workflows/deploy.yml", ".github/workflows/drift.yml", "deploy/remote.sh", "deploy/compose.yml"]
+  },
+  { id: "golden", kind: "writes", targets: [".fm/golden/"] },
+  { id: "organize", kind: "writes", targets: ["docs/organize/"] },
+  {
+    id: "api-contract",
+    kind: "writes",
+    targets: ["src/api/", "src/mocks/", "app/api/", "app/mocks/", "lib/api/", "lib/mocks/"]
+  },
+  { id: "ds-sync", kind: "writes", targets: [".github/workflows/ds-sync.yml"] },
+  {
+    id: "python-preset",
+    kind: "writes",
+    targets: ["ruff.toml", "pytest.ini", "scripts/check_no_comments.py", ".github/workflows/ci.yml"]
+  },
+  { id: "python-metrics", kind: "reads", targets: ["changed .py files"], via: "python3" },
+  { id: "onboard", kind: "writes", targets: [".fm/onboard.json", "AGENTS.md"] },
+  { id: "ledger-key", kind: "writes", targets: ["~/.finitemonkey/ledger.key"] },
+  {
+    id: "guardian",
+    kind: "writes",
+    targets: [".fm/goals.yml", ".fm/decisions.jsonl", ".fm/assumptions.jsonl", ".fm/research/"]
+  },
+  { id: "guard-bypass", kind: "writes", targets: [".fm/bypasses.jsonl"] },
+  { id: "mod-cost", kind: "writes", targets: [".fm/cost.jsonl"] },
+  {
+    id: "knowledge",
+    kind: "writes",
+    targets: [
+      ".fm/claims.jsonl",
+      ".fm/derived.json",
+      ".fm/demoted.json",
+      ".fm/retrieve.jsonl",
+      ".fm/claim-use.jsonl",
+      ".fm/premise-checks.json",
+      ".fm/decision-records/",
+      ".fm/decision-reasons.jsonl",
+      ".fm/cache/knowledge-map.json",
+      ".fm/cache/questions.json",
+      ".fm/cache/claim-files.json",
+      "AGENTS.rules.md"
+    ]
+  },
+  { id: "infra-plan", kind: "sends", targets: ["terraform provider APIs"], via: "terraform" },
+  { id: "parking", kind: "writes", targets: [".fm/parking.jsonl"] },
+  { id: "ui-copy", kind: "writes", targets: [".fm/cache/copy-rules.json"] },
+  { id: "ui-critic", kind: "writes", targets: [".fm/cache/critic-classes.json"] },
+  {
+    id: "ds-config",
+    kind: "reads",
+    targets: ["tailwind.config.js", "tailwind.config.cjs", "tailwind.config.mjs", "tailwind.config.ts"]
+  },
+  { id: "judge", kind: "writes", targets: [".fm/judge.jsonl", ".fm/judge/"] },
+  {
+    id: "teach-back",
+    kind: "writes",
+    targets: [".fm/teach.jsonl", ".fm/cache/teach-pause.json", ".fm/cache/blueprint-asked.json"]
+  },
+  { id: "cite-sources", kind: "sends", targets: ["doi.org", "cited URLs"], via: "curl" },
+  {
+    id: "provider",
+    kind: "writes",
+    targets: [".fm/provider.json", ".fm/provider-proposals.jsonl"]
+  },
+  { id: "model-provider", kind: "sends", targets: ["api.anthropic.com"], via: "claude" }
+];
+var SENDS_HOSTS = FOOTPRINT.filter((entry2) => entry2.kind === "sends").flatMap(
+  (entry2) => entry2.targets
+);
+
 // src/core/data-dir-layout.ts
 var GITIGNORE_LINE = `${DATA_DIR_NAME}/*`;
 var GITIGNORE_PROBE = `${DATA_DIR_NAME}/state.json`;
 var GITIGNORE_MARK = join("cache", "gitignore-checked");
-var MARKERS = /* @__PURE__ */ new Set([
-  "state.json",
-  "trust.json",
-  "log.jsonl",
-  "config.yml",
-  "lock.json",
-  "policy.yml",
-  "rules.yml",
-  "tasks",
-  "evidence",
-  "cache",
-  "allow",
-  "runtime",
-  "locks",
-  "backups",
-  "reports",
-  "merge-dropped.json"
-]);
+var MARKERS = new Set(
+  FOOTPRINT.flatMap((entry2) => entry2.targets).filter((target7) => target7.startsWith(`${DATA_DIR_NAME}/`)).map((target7) => target7.slice(DATA_DIR_NAME.length + 1).split("/")[0] ?? "").filter((name) => name !== "")
+);
 var isDataDir = (probe, path) => {
   if (probe.kind(path) !== "dir") return false;
   const entries3 = probe.entries(path);
@@ -45404,7 +45674,7 @@ var statusOf6 = (text45) => {
 
 // src/stale/refs.ts
 var ISSUE = /(?<![\w/&])#(\d{1,6})\b/g;
-var COMMAND = /\bfinitemonkey\s+([a-z][a-z0-9-]*(?:\s+[a-z][a-z0-9-]*){0,2})/g;
+var COMMAND = /\b(?:finitemonkey|fm)\s+([a-z][a-z0-9-]*(?:\s+[a-z][a-z0-9-]*){0,2})/g;
 var TICKED = /`([a-z][a-z0-9-]*)`/g;
 var unique2 = (items2) => [...new Set(items2)];
 var longestCommand = (words11, commands) => {

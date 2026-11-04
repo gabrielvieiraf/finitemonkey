@@ -83,7 +83,7 @@ describe("deploy plan", () => {
   it("asks once for the level, only a person confirms it, and the answer sticks", async () => {
     const repo = project({ "scripts/deploy.sh": SSH_SCRIPT });
     const first = await cliJson(["deploy", "plan"], { cwd: repo.root, runtime: repoRuntime() });
-    assert.equal(first.body["next"], "finitemonkey deploy plan --level 1 --yes");
+    assert.equal(first.body["next"], "fm deploy plan --level 1 --yes");
     const agent = await cli(["deploy", "plan", "--level", "1", "--yes"], {
       cwd: repo.root,
       runtime: repoRuntime(),

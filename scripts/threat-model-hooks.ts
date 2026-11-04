@@ -40,7 +40,7 @@ export const hooks: readonly Threat[] = [
     threat: "Someone with a shell deletes `.fm/`",
     outcome: "detected",
     mechanism:
-      "Approvals, incidents and backups are mirrored with a signed index to `.git/finitemonkey/mirror/` and `~/.fm/projects/<id>/`; when the store comes back without its mirror marker, the session start and the gate copy back every file whose hash matches and log `store_restored`. Task contracts and evidence are not mirrored (the gate runs every check again), and a process that also deletes both mirrors or the key leaves nothing to restore",
+      "Approvals, incidents and backups are mirrored with a signed index to `.git/finitemonkey/mirror/` and `~/.finitemonkey/projects/<id>/`; when the store comes back without its mirror marker, the session start and the gate copy back every file whose hash matches and log `store_restored`. Task contracts and evidence are not mirrored (the gate runs every check again), and a process that also deletes both mirrors or the key leaves nothing to restore",
     code: ["src/task/mirror.ts", "src/gate/hooks/session.ts"],
     proof: {
       file: "test/store-mirror.test.ts",
@@ -183,7 +183,7 @@ export const ledger: readonly Threat[] = [
     threat: "The agent appends a passed line for the current tree",
     outcome: "detected",
     mechanism:
-      "Every line carries an HMAC with a key in `~/.fm/ledger.key`; a line without a valid signature is ignored and reported",
+      "Every line carries an HMAC with a key in `~/.finitemonkey/ledger.key`; a line without a valid signature is ignored and reported",
     code: ["src/evidence/sign.ts", "src/evidence/ledger.ts"],
     proof: {
       file: "test/ledger-hmac.test.ts",

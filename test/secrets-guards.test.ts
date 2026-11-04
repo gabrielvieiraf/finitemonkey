@@ -214,7 +214,7 @@ describe("PreToolUse secrets guard: reads", () => {
 
 describe("PreToolUse secrets guard: the ledger signing key", () => {
   it("a Read or cat of the ledger signing key is blocked like any key file", async () => {
-    const key = "/home/ana/.fm/ledger.key";
+    const key = "/home/ana/.finitemonkey/ledger.key";
     assert.equal((await fire("PreToolUse", tool("Read", { file_path: key }))).verdict, "block");
     assert.equal((await fire("PreToolUse", tool("Bash", { command: `cat ${key}` }))).verdict, "block");
   });

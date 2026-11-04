@@ -183,7 +183,7 @@ describe("a policy file only changes what it names", () => {
     const fs = memoryFs(
       {
         [at(POLICY_FILE)]: "guards:\n  deps: active\n  prose: shadow\n  secrets: off\n",
-        [toAbsolutePath("/home/test/.fm/policy.yml")]: "guards:\n  deps: off\n  prose: active\n  slop: off\n",
+        [toAbsolutePath("/home/test/.finitemonkey/policy.yml")]: "guards:\n  deps: off\n  prose: active\n  slop: off\n",
       },
       [at(".git")],
     );

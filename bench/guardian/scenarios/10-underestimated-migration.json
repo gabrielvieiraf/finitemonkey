@@ -5,7 +5,7 @@
   "request": "run the production migration now",
   "information": "it relies on an unverified high-impact assumption about payouts",
   "files": {
-    ".finitemonkey/assumptions.jsonl": "{\"id\": \"a1\", \"text\": \"payouts settle on D+1\", \"source\": \"manual\", \"impact\": \"high\", \"breaks\": \"\", \"confidence\": \"low\", \"verify\": \"read the provider changelog\", \"status\": \"unverified\", \"at\": \"2026-10-20\"}\n"
+    ".fm/assumptions.jsonl": "{\"id\": \"a1\", \"text\": \"payouts settle on D+1\", \"source\": \"manual\", \"impact\": \"high\", \"breaks\": \"\", \"confidence\": \"low\", \"verify\": \"read the provider changelog\", \"status\": \"unverified\", \"at\": \"2026-10-20\"}\n"
   },
   "contract": "id: work\ngoal: move payouts\nsize: M\nscope:\n  paths: [src/billing/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\nassumptions: [a1]\n",
   "change": {},

@@ -97,7 +97,7 @@ describe("timebox answers", () => {
   it('parks the task after "stop" and does not ask again', async () => {
     const repo = setup();
     assert.match(await promptAt(repo, 6, "go on"), ASKED);
-    assert.match(await promptAt(repo, 6.5, "parar"), /parked as p1.*finitemonkey unpark p1/);
+    assert.match(await promptAt(repo, 6.5, "parar"), /parked as p1.*fm unpark p1/);
     assert.match(repo.read(".fm/parking.jsonl"), /"task":"now"/);
     assert.doesNotMatch(await promptAt(repo, 9, "hello"), ASKED);
   });

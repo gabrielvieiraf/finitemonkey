@@ -5,7 +5,7 @@
   "request": "also rewrite the auth module while at it",
   "information": "the approved contract covered src/billing/ only",
   "files": {
-    ".finitemonkey/trust.json": "{\"contracts\": {}, \"approved\": {\"work\": \"id: work\\ngoal: charge cards\\nsize: M\\nscope:\\n  paths: [src/billing/]\\nacceptance:\\n  - id: t\\n    check: command\\n    run: npm test\\n\"}}"
+    ".fm/trust.json": "{\"contracts\": {}, \"approved\": {\"work\": \"id: work\\ngoal: charge cards\\nsize: M\\nscope:\\n  paths: [src/billing/]\\nacceptance:\\n  - id: t\\n    check: command\\n    run: npm test\\n\"}}"
   },
   "contract": "id: work\ngoal: charge cards\nsize: M\nscope:\n  paths: [src/billing/, src/auth/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
   "change": {},

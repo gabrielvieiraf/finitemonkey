@@ -5,7 +5,7 @@
   "request": "make billing multi tenant",
   "information": "goals.yml lists multi tenant as a stated non-goal",
   "files": {
-    ".finitemonkey/goals.yml": "non_goals:\n  - id: n1\n    text: multi tenant\n    origin: stated\n"
+    ".fm/goals.yml": "non_goals:\n  - id: n1\n    text: multi tenant\n    origin: stated\n"
   },
   "contract": "id: work\ngoal: make billing multi tenant\nsize: M\nscope:\n  paths: [src/billing/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
   "change": {},
