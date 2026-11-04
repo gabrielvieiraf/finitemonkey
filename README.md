@@ -168,15 +168,15 @@ The price is about 1.6 times the cost and twice the wall time: the gate runs the
 The always-on guards are also replayed on every release against a labeled corpus:
 
 <!-- generated:evidence:start -->
-Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.47 over the labeled corpus in [bench/corpus](bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
+Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.48 over the labeled corpus in [bench/corpus](bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
 
 | Guard | Should block | Should allow | False positives | False negatives | p95 (ms) |
 |---|---|---|---|---|---|
 | `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
-| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 26.0 |
-| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 54.7 |
-| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.4 |
-| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.3 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 27.7 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 62.3 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 0.9 |
+| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.4 |
 
 Cost against plain Claude Code on the same tasks: not measured yet.
 
