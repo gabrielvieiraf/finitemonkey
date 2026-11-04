@@ -18,6 +18,7 @@ import { type GateRun, runGate } from "../run.js";
 import { canClose } from "../state.js";
 import { allowWith, findRepoRoot, gateBudget, human, sessionCwd } from "./common.js";
 import { nextBlock, readCounter, saveCounter } from "./counter.js";
+import { sessionTouchedRepo } from "./session-touched.js";
 import { recordReleasedByCap, writeGateStatus } from "./status.js";
 
 const failureDetail = (
@@ -169,6 +170,8 @@ const notRun = (input: HookInput, detail: string, state: NotRunState): HookDecis
   if (root === undefined) return message;
   const paths = fmPaths(root);
   writeGateStatus(runtime, paths, { status: "not_run", task: "", detail, state });
+  if (readState(runtime, paths).active === undefined && !sessionTouchedRepo(runtime, paths, input.payload.sessionId))
+    return message;
   const signature = sha256(JSON.stringify(["not_run", detail]));
   const previous = readCounter(runtime, paths);
   if (previous?.task === NOT_RUN_TASK && previous.signature === signature) return message;
