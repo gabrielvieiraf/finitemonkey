@@ -4,6 +4,7 @@ export interface SimpleCommand {
   readonly env: Readonly<Record<string, string>>;
   readonly argv: readonly string[];
   readonly redirects: readonly string[];
+  readonly outputs: readonly string[];
 }
 
 const HEREDOC = /^<<[-<]?$/;
@@ -13,4 +14,5 @@ export const parseShell = (text: string): readonly SimpleCommand[] =>
     env: command.env,
     argv: command.program === "" ? [] : [command.program, ...command.args],
     redirects: command.redirects.filter((redirect) => !HEREDOC.test(redirect.op)).map((redirect) => redirect.target),
+    outputs: command.redirects.filter((redirect) => redirect.op.includes(">")).map((redirect) => redirect.target),
   }));

@@ -12,7 +12,7 @@ export const LESSON_SOURCES = ["signature", "correction", "advisor", "person"] a
 export const EXPIRE_DAYS = 90;
 export const EXPIRE_UNHELPFUL = 2;
 const DAY_MS = 86_400_000;
-const MAX_TEXT = 300;
+export const MAX_TEXT = 300;
 
 export type LessonSource = (typeof LESSON_SOURCES)[number];
 
@@ -140,6 +140,13 @@ export const pruneLessons = (
   return { kept, expired };
 };
 
+export const clipWords = (text: string, max: number): string => {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 0 ? cut.slice(0, space) : cut).trimEnd()}…`;
+};
+
 export const lessonId = (body: string, key: string): string =>
   createHash("sha256").update(`${key}\0${body}`, "utf8").digest("hex").slice(0, 8);
 
@@ -147,7 +154,7 @@ export const newLesson = (
   input: Pick<Lesson, "text" | "paths" | "sig" | "source" | "origin" | "quarantined">,
   now: string,
 ): Lesson => {
-  const body = maskText(input.text).slice(0, MAX_TEXT);
+  const body = clipWords(maskText(input.text), MAX_TEXT);
   return {
     id: lessonId(body, `${input.sig ?? ""}|${input.paths.join(",")}`),
     text: body,

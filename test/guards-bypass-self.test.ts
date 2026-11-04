@@ -107,6 +107,22 @@ describe("self guard", () => {
     ["finitemonkey task new t --goal x", []],
     ["sed -n 1p .finitemonkey/lock.json", []],
     ["ls .finitemonkey", []],
+    [`python3 -c "import json\nfor l in open('.finitemonkey/signals.jsonl'): print(json.loads(l)['kind'])"`, []],
+    [`python3 -c "print(open('.finitemonkey/state.json', 'rb').read())"`, []],
+    [`python3 -c "print(open('.finitemonkey/state.json', mode='r').read())"`, []],
+    [`node -e "console.log(require('fs').readFileSync('.finitemonkey/state.json','utf8'))"`, []],
+    ["wc -l < .finitemonkey/signals.jsonl", []],
+    ["jq -c . < .finitemonkey/state.json > /tmp/state.json", []],
+    ["grep -c error .finitemonkey/signals.jsonl", []],
+    ["head -5 .finitemonkey/log.jsonl && tail -2 .finitemonkey/log.jsonl", []],
+    ["echo x >> .finitemonkey/signals.jsonl", ["policy"]],
+    ["mv /tmp/x .finitemonkey/state.json", ["policy"]],
+    [`python3 -c "open('.finitemonkey/state.json', 'w').write('{}')"`, ["policy"]],
+    [`python3 -c "open('.finitemonkey/signals.jsonl', 'a').write('x')"`, ["policy"]],
+    [`python3 -c "from pathlib import Path; Path('.finitemonkey/state.json').write_text('{}')"`, ["policy"]],
+    [`python3 -c "import os; os.remove('.finitemonkey/state.json')"`, ["policy"]],
+    [`node -e "require('fs').appendFileSync('.finitemonkey/log.jsonl','x')"`, ["policy"]],
+    [`python3 -c "p=open('.finitemonkey/x', mode); p.write('')"`, ["policy"]],
   ] as const;
   for (const [command, kinds] of commands) {
     it(`bash ${kinds.length > 0 ? "blocks" : "passes"}: ${command}`, () => {

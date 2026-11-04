@@ -50,19 +50,26 @@ const FM_NAMES = new Set(["finitemonkey", "fm"]);
 const inline = (argv: readonly string[]): boolean =>
   argv.some((arg) => arg === "-e" || arg === "-c" || arg === "--eval");
 
+const READ_MODE = String.raw`\s*(?:,\s*(?:mode\s*=\s*)?['"]r?[bt]?['"]\s*)?\)`;
+const READ_OPEN = new RegExp(String.raw`(?<![.\w])open\s*\(\s*(?:'[^']*'|"[^"]*"|[\w.]+)${READ_MODE}`, "g");
+const WRITE_HINT =
+  /\bopen\w*\s*\(|write|append|unlink|remove|rename|os\.replace|rmdir|\brm(?:Sync)?\b|mkdir|truncate|copy|move|symlink|chmod|chown|shutil|subprocess|system|child_process|exec|spawn|\bdump\(/i;
+
+export const inlineWrites = (code: string): boolean => WRITE_HINT.test(code.replace(READ_OPEN, "read("));
+
 export const writtenPaths = (command: SimpleCommand): readonly string[] => {
   const [name = "", ...args] = command.argv;
   const operands = args.filter((arg) => !arg.startsWith("-"));
   const ddTargets = args.filter((arg) => arg.startsWith("of=")).map((arg) => arg.slice(3));
-  if (FM_NAMES.has(name)) return command.redirects;
-  if (COPIERS.has(name)) return [...command.redirects, ...operands.slice(-1)];
-  if (WRITERS.has(name)) return [...command.redirects, ...operands, ...ddTargets];
+  if (FM_NAMES.has(name)) return command.outputs;
+  if (COPIERS.has(name)) return [...command.outputs, ...operands.slice(-1)];
+  if (WRITERS.has(name)) return [...command.outputs, ...operands, ...ddTargets];
   if (IN_PLACE.has(name) && args.some((arg) => /^-[a-zA-Z]*i/.test(arg) || arg.startsWith("--in-place"))) {
-    return [...command.redirects, ...operands];
+    return [...command.outputs, ...operands];
   }
-  if (INTERPRETERS.has(name) && inline(args)) return [...command.redirects, ...args];
-  if (name === "git" && GIT_WRITERS.has(operands[0] ?? "")) return [...command.redirects, ...operands.slice(1)];
-  return command.redirects;
+  if (INTERPRETERS.has(name) && inline(args) && args.some(inlineWrites)) return [...command.outputs, ...args];
+  if (name === "git" && GIT_WRITERS.has(operands[0] ?? "")) return [...command.outputs, ...operands.slice(1)];
+  return command.outputs;
 };
 
 const FRONT_REPORT = /\.finitemonkey[\\/]reports[\\/][^\\/]+\.json$/;
