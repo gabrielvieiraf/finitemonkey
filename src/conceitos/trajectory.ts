@@ -1,4 +1,3 @@
-import type { Domain } from "../perfil/types.js";
 import { DOMAINS } from "../perfil/types.js";
 import { isoWeek } from "../signals/blind-band.js";
 import { type ConceptId, domainOf } from "./concepts.js";
@@ -52,7 +51,7 @@ export interface Mark {
 }
 
 export interface DomainTrajectory {
-  readonly domain: Domain;
+  readonly domain: string;
   readonly status: "ok" | "no_data";
   readonly evidence: number;
   readonly weeks: readonly Week[];
@@ -135,13 +134,18 @@ export const landedLevel = (
   return Math.max(...levels);
 };
 
+export const fieldOfConcept = (id: ConceptId): string => {
+  const segments = id.split("/");
+  return segments[0] === "research" && segments.length === 3 ? (segments[1] ?? "research") : domainOf(id);
+};
+
 const seriesOf = (
-  domain: Domain,
+  domain: string,
   all: readonly ConceptEvent[],
   helps: readonly HelpMark[],
   now: number,
 ): DomainTrajectory => {
-  const events = all.filter((event) => domainOf(event.concept) === domain);
+  const events = all.filter((event) => fieldOfConcept(event.concept) === domain);
   const keys = weekKeys(now);
   const weighted = events.filter((event) => event.weight !== 0 || event.origin === "agent");
   const weeksWith = new Set(weighted.map((event) => isoWeek(event.at)));
@@ -186,16 +190,22 @@ const seriesOf = (
 };
 
 export const trajectoryOf = (
-  domain: Domain,
+  domain: string,
   all: readonly ConceptEvent[],
   helps: readonly HelpMark[],
   now: number,
   outcomes: readonly OutcomeMark[] = [],
 ): DomainTrajectory => {
   const series = seriesOf(domain, all, helps, now);
-  const classified = classify(all.filter((event) => domainOf(event.concept) === domain));
+  const classified = classify(all.filter((event) => fieldOfConcept(event.concept) === domain));
   const weeks = series.weeks.map((week) => ({ ...week, splits: splitsOf(classified, outcomes, domain, week.week) }));
   return { ...series, weeks };
+};
+
+export const fieldsOf = (events: readonly ConceptEvent[]): readonly string[] => {
+  const fixed: readonly string[] = DOMAINS;
+  const extra = new Set(events.map((event) => fieldOfConcept(event.concept)).filter((field) => !fixed.includes(field)));
+  return [...fixed, ...[...extra].sort()];
 };
 
 export const trajectories = (
@@ -203,4 +213,4 @@ export const trajectories = (
   helps: readonly HelpMark[],
   now: number,
   outcomes: readonly OutcomeMark[] = [],
-): readonly DomainTrajectory[] => DOMAINS.map((domain) => trajectoryOf(domain, events, helps, now, outcomes));
+): readonly DomainTrajectory[] => fieldsOf(events).map((domain) => trajectoryOf(domain, events, helps, now, outcomes));
