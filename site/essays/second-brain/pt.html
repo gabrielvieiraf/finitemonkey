@@ -2,6 +2,9 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>
       A ilusão do segundo cérebro: uma análise crítica dos sistemas de gestão do conhecimento pessoal baseados em LLM ·
@@ -56,7 +59,43 @@
     <a class="skip" href="#text">Pular para o texto</a>
     <div class="page" id="top">
       <header class="bar">
-        <a class="brand" href="../../?lang=pt">finitemonkey</a>
+        <a class="brand" href="../../?lang=pt" aria-label="Finite Monkey" data-intro
+          ><svg class="brand-mark" viewBox="100 68 150 126" aria-hidden="true" focusable="false">
+            <g class="brand-head">
+              <circle cx="122" cy="140" r="18" fill="#8b5a3c" />
+              <circle cx="122" cy="140" r="10" fill="#d9b184" />
+              <circle cx="228" cy="140" r="18" fill="#8b5a3c" />
+              <circle cx="228" cy="140" r="10" fill="#d9b184" />
+              <circle cx="175" cy="138" r="52" fill="#8b5a3c" />
+              <path d="M162 90Q168 74 177 87Q184 72 192 90Z" fill="#8b5a3c" />
+              <path
+                d="M166 94Q175 102 186 94"
+                fill="none"
+                stroke="#6a4029"
+                stroke-width="2"
+                stroke-linecap="round"
+                opacity="0.6"
+              />
+              <circle cx="157" cy="134" r="23" fill="#efcfa6" />
+              <circle cx="193" cy="134" r="23" fill="#efcfa6" />
+              <ellipse cx="175" cy="162" rx="34" ry="25" fill="#efcfa6" />
+              <ellipse cx="146" cy="158" rx="7" ry="4" fill="#f19a8a" opacity="0.55" />
+              <ellipse cx="204" cy="158" rx="7" ry="4" fill="#f19a8a" opacity="0.55" />
+              <g class="brand-eyes">
+                <circle cx="158" cy="133" r="6" fill="#1a1d2a" />
+                <circle cx="192" cy="133" r="6" fill="#1a1d2a" />
+                <circle cx="160" cy="131" r="2" fill="#ffffff" />
+                <circle cx="194" cy="131" r="2" fill="#ffffff" />
+              </g>
+              <circle cx="170" cy="153" r="2" fill="#d9b184" />
+              <circle cx="180" cy="153" r="2" fill="#d9b184" />
+              <path d="M161 164Q175 176 189 164" fill="none" stroke="#1a1d2a" stroke-width="3" stroke-linecap="round" />
+            </g></svg
+          ><span class="brand-word" aria-hidden="true"
+            ><span>f</span><span>i</span><span>n</span><span>i</span><span>t</span><span>e</span> <span>m</span
+            ><span>o</span><span>n</span><span>k</span><span>e</span><span>y</span></span
+          ></a
+        >
         <span class="tag">ensaio 2</span>
         <nav class="nav" aria-label="Site">
           <a href="../../?lang=pt#essays">ensaios</a>
@@ -779,14 +818,380 @@
             </p>
             <figure class="fig">
               <a class="plate" href="figures/pt-BR/fig1.svg" title="abrir em tamanho real"
-                ><img
-                  src="figures/pt-BR/fig1.svg"
+                ><svg
+                  class="fig-svg"
+                  data-fig="second-brain-fig1"
+                  xmlns="http://www.w3.org/2000/svg"
                   width="980"
                   height="480"
-                  loading="lazy"
-                  decoding="async"
-                  alt='Figura 1 – As quatro memórias de um sistema com LLM e onde o "segundo cérebro" de fato mora.'
-              /></a>
+                  viewBox="0 0 980 480"
+                  role="img"
+                  aria-label='Figura 1 – As quatro memórias de um sistema com LLM e onde o "segundo cérebro" de fato mora.'
+                >
+                  <title>As quatro memórias de um sistema com LLM</title>
+                  <defs>
+                    <pattern
+                      id="second-brain-fig1-hatch"
+                      width="8"
+                      height="8"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <rect width="8" height="8" fill="#fee2e2" />
+                      <line x1="0" y1="0" x2="0" y2="8" stroke="#dc2626" stroke-width="2.2" />
+                    </pattern>
+                    <marker
+                      id="second-brain-fig1-arrow"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig1-arrowm"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig1-arrowr"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig1-arrowg"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#059669" />
+                    </marker>
+                  </defs>
+                  <rect x="0" y="0" width="980" height="480" fill="#ffffff" stroke="none" stroke-width="0" rx="0" />
+                  <text
+                    x="490.0"
+                    y="36"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="19"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="490.0" dy="0.0">As quatro memórias de um sistema com LLM</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.000"
+                    x="30"
+                    y="90"
+                    width="230"
+                    height="230"
+                    fill="#f3f4f6"
+                    stroke="#9ca3af"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.120"
+                    x="44"
+                    y="116"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="16"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="44" dy="0.0">Paramétrica</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.170"
+                    x="44"
+                    y="140"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="44" dy="0.0">Pesos do modelo.</tspan>
+                    <tspan x="44" dy="17.6">Fatos, padrões de linguagem</tspan>
+                    <tspan x="44" dy="17.6">e de raciocínio até a</tspan>
+                    <tspan x="44" dy="17.6">data de corte.</tspan>
+                    <tspan x="44" dy="17.6"></tspan>
+                    <tspan x="44" dy="17.6">Muda só com novo</tspan>
+                    <tspan x="44" dy="17.6">ciclo de treino.</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.300"
+                    x="145"
+                    y="345"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="normal"
+                    font-style="italic"
+                  >
+                    <tspan x="145" dy="0.0">fixa durante a inferência</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.200"
+                    x="320"
+                    y="90"
+                    width="270"
+                    height="230"
+                    fill="#dbeafe"
+                    stroke="#2563eb"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.320"
+                    x="334"
+                    y="116"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="16"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="334" dy="0.0">Contexto</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.370"
+                    x="334"
+                    y="140"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="334" dy="0.0">Os tokens de uma chamada:</tspan>
+                    <tspan x="334" dy="17.6">pergunta, instruções,</tspan>
+                    <tspan x="334" dy="17.6">notas recuperadas.</tspan>
+                    <tspan x="334" dy="17.6"></tspan>
+                    <tspan x="334" dy="17.6">O aprendizado em contexto</tspan>
+                    <tspan x="334" dy="17.6">acontece aqui.</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.500"
+                    x="455"
+                    y="345"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="normal"
+                    font-style="italic"
+                  >
+                    <tspan x="455" dy="0.0">some quando a sessão termina</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.600"
+                    x="660"
+                    y="90"
+                    width="290"
+                    height="100"
+                    fill="#fef3c7"
+                    stroke="#d97706"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.720"
+                    x="674"
+                    y="116"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="16"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="674" dy="0.0">Episódica</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.770"
+                    x="674"
+                    y="140"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="674" dy="0.0">Resumo de conversas</tspan>
+                    <tspan x="674" dy="17.6">anteriores, guardado fora</tspan>
+                    <tspan x="674" dy="17.6">do modelo.</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.720"
+                    x="660"
+                    y="220"
+                    width="290"
+                    height="100"
+                    fill="#fef3c7"
+                    stroke="#d97706"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.840"
+                    x="674"
+                    y="246"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="16"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="674" dy="0.0">Externa</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.890"
+                    x="674"
+                    y="270"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="674" dy="0.0">Documentos, cofre de notas,</tspan>
+                    <tspan x="674" dy="17.6">banco vetorial, CLAUDE.md.</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.950"
+                    data-d="0.300"
+                    x1="660"
+                    y1="140"
+                    x2="595"
+                    y2="175"
+                    stroke="#1f2937"
+                    stroke-width="1.8"
+                    marker-end="url(#second-brain-fig1-arrow)"
+                  />
+                  <line
+                    data-a="draw"
+                    data-t="1.030"
+                    data-d="0.300"
+                    x1="660"
+                    y1="270"
+                    x2="595"
+                    y2="235"
+                    stroke="#1f2937"
+                    stroke-width="1.8"
+                    marker-end="url(#second-brain-fig1-arrow)"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.100"
+                    x="625"
+                    y="210"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="625" dy="0.0">injetado</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.500"
+                    data-d="0.300"
+                    x1="320"
+                    y1="205"
+                    x2="265"
+                    y2="205"
+                    stroke="#1f2937"
+                    stroke-width="1.8"
+                    marker-end="url(#second-brain-fig1-arrow)"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.650"
+                    x="292"
+                    y="195"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="292" dy="0.0">lido</tspan>
+                  </text>
+                  <path
+                    data-a="draw"
+                    data-t="1.250"
+                    data-d="0.500"
+                    d="M320,380 L320,392 L950,392 L950,380"
+                    fill="none"
+                    stroke="#dc2626"
+                    stroke-width="2"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.500"
+                    x="635"
+                    y="420"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#dc2626"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="635" dy="0.0">Onde o "segundo cérebro" de fato mora</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.600"
+                    x="635"
+                    y="442"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="635" dy="0.0">
+                      Texto guardado fora do modelo e posto no contexto a cada chamada. O modelo não muda.
+                    </tspan>
+                  </text>
+                </svg></a
+              >
               <figcaption>
                 Figura 1 – As quatro memórias de um sistema com LLM e onde o &quot;segundo cérebro&quot; de fato mora.
                 <span class="src">Fonte: elaboração própria (2026), com base em Zhang, D. et al. (2025).</span>
@@ -1595,14 +2000,505 @@
             </p>
             <figure class="fig">
               <a class="plate" href="figures/pt-BR/fig2.svg" title="abrir em tamanho real"
-                ><img
-                  src="figures/pt-BR/fig2.svg"
+                ><svg
+                  class="fig-svg"
+                  data-fig="second-brain-fig2"
+                  xmlns="http://www.w3.org/2000/svg"
                   width="1000"
                   height="560"
-                  loading="lazy"
-                  decoding="async"
-                  alt="Figura 2 – A nota que apodrece em silêncio e a afirmação ancorada que vence sozinha quando o código muda."
-              /></a>
+                  viewBox="0 0 1000 560"
+                  role="img"
+                  aria-label="Figura 2 – A nota que apodrece em silêncio e a afirmação ancorada que vence sozinha quando o código muda."
+                >
+                  <title>A nota que apodrece e a afirmação que vence sozinha</title>
+                  <defs>
+                    <pattern
+                      id="second-brain-fig2-hatch"
+                      width="8"
+                      height="8"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <rect width="8" height="8" fill="#fee2e2" />
+                      <line x1="0" y1="0" x2="0" y2="8" stroke="#dc2626" stroke-width="2.2" />
+                    </pattern>
+                    <marker
+                      id="second-brain-fig2-arrow"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig2-arrowm"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig2-arrowr"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig2-arrowg"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#059669" />
+                    </marker>
+                  </defs>
+                  <rect x="0" y="0" width="1000" height="560" fill="#ffffff" stroke="none" stroke-width="0" rx="0" />
+                  <text
+                    x="500.0"
+                    y="36"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="19"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="500.0" dy="0.0">A nota que apodrece e a afirmação que vence sozinha</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.000"
+                    x="230"
+                    y="78"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="230" dy="0.0">Registro</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.000"
+                    data-d="0.600"
+                    x1="230"
+                    y1="88"
+                    x2="230"
+                    y2="520"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                    stroke-dasharray="4 4"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.080"
+                    x="500"
+                    y="78"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="500" dy="0.0">O código muda</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.080"
+                    data-d="0.600"
+                    x1="500"
+                    y1="88"
+                    x2="500"
+                    y2="520"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                    stroke-dasharray="4 4"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.160"
+                    x="770"
+                    y="78"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="770" dy="0.0">Sessão seguinte</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.160"
+                    data-d="0.600"
+                    x1="770"
+                    y1="88"
+                    x2="770"
+                    y2="520"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                    stroke-dasharray="4 4"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.150"
+                    x="20"
+                    y="175"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="20" dy="0.0">Nota</tspan>
+                    <tspan x="20" dy="18.8">comum</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.250"
+                    x="20"
+                    y="395"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="20" dy="0.0">Afirmação</tspan>
+                    <tspan x="20" dy="18.8">ancorada</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.300"
+                    x="150"
+                    y="120"
+                    width="165"
+                    height="105"
+                    fill="#f3f4f6"
+                    stroke="#9ca3af"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.420"
+                    x="164"
+                    y="146"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="164" dy="0.0">Nota no cofre</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.470"
+                    x="164"
+                    y="170"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="164" dy="0.0">"Toda rota autenticada</tspan>
+                    <tspan x="164" dy="16.2">passa pelo middleware</tspan>
+                    <tspan x="164" dy="16.2">X."</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.620"
+                    x="420"
+                    y="120"
+                    width="165"
+                    height="105"
+                    fill="#f3f4f6"
+                    stroke="#9ca3af"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.740"
+                    x="434"
+                    y="146"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="434" dy="0.0">Commit</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.790"
+                    x="434"
+                    y="170"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="434" dy="0.0">Rota nova usa outro</tspan>
+                    <tspan x="434" dy="16.2">middleware. A nota</tspan>
+                    <tspan x="434" dy="16.2">não sabe.</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.940"
+                    x="690"
+                    y="120"
+                    width="165"
+                    height="105"
+                    fill="#fee2e2"
+                    stroke="#dc2626"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.060"
+                    x="704"
+                    y="146"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="704" dy="0.0">Injetada no contexto</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.110"
+                    x="704"
+                    y="170"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="704" dy="0.0">O agente segue a nota</tspan>
+                    <tspan x="704" dy="16.2">com confiança e erra.</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.520"
+                    data-d="0.220"
+                    x1="317"
+                    y1="172"
+                    x2="418"
+                    y2="172"
+                    stroke="#1f2937"
+                    stroke-width="1.5"
+                    marker-end="url(#second-brain-fig2-arrow)"
+                  />
+                  <line
+                    data-a="draw"
+                    data-t="0.840"
+                    data-d="0.220"
+                    x1="587"
+                    y1="172"
+                    x2="688"
+                    y2="172"
+                    stroke="#dc2626"
+                    stroke-width="1.8"
+                    marker-end="url(#second-brain-fig2-arrowr)"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.150"
+                    x="770"
+                    y="255"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#dc2626"
+                    text-anchor="middle"
+                    font-weight="normal"
+                    font-style="italic"
+                  >
+                    <tspan x="770" dy="0.0">ninguém vê o erro até ele custar</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.550"
+                    x="150"
+                    y="340"
+                    width="165"
+                    height="105"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.670"
+                    x="164"
+                    y="366"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="164" dy="0.0">Afirmação + âncora</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.720"
+                    x="164"
+                    y="390"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="164" dy="0.0">Mesmo texto, presa a</tspan>
+                    <tspan x="164" dy="16.2">auth.ts#requireUser</tspan>
+                    <tspan x="164" dy="16.2">hash a3f9 · check: teste</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.870"
+                    x="420"
+                    y="340"
+                    width="165"
+                    height="105"
+                    fill="#fef3c7"
+                    stroke="#d97706"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.990"
+                    x="434"
+                    y="366"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="434" dy="0.0">Obsoleta</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.040"
+                    x="434"
+                    y="390"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="434" dy="0.0">Hash agora b71c ≠ a3f9.</tspan>
+                    <tspan x="434" dy="16.2">Sai do contexto</tspan>
+                    <tspan x="434" dy="16.2">sozinha.</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="1.190"
+                    x="690"
+                    y="340"
+                    width="165"
+                    height="105"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.310"
+                    x="704"
+                    y="366"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="704" dy="0.0">Revalidada</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.360"
+                    x="704"
+                    y="390"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="704" dy="0.0">O check roda no gate.</tspan>
+                    <tspan x="704" dy="16.2">Passou: volta com o</tspan>
+                    <tspan x="704" dy="16.2">hash novo. Falhou: aviso.</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.770"
+                    data-d="0.220"
+                    x1="317"
+                    y1="392"
+                    x2="418"
+                    y2="392"
+                    stroke="#1f2937"
+                    stroke-width="1.5"
+                    marker-end="url(#second-brain-fig2-arrow)"
+                  />
+                  <line
+                    data-a="draw"
+                    data-t="1.090"
+                    data-d="0.220"
+                    x1="587"
+                    y1="392"
+                    x2="688"
+                    y2="392"
+                    stroke="#059669"
+                    stroke-width="1.8"
+                    marker-end="url(#second-brain-fig2-arrowg)"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.400"
+                    x="770"
+                    y="475"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#059669"
+                    text-anchor="middle"
+                    font-weight="normal"
+                    font-style="italic"
+                  >
+                    <tspan x="770" dy="0.0">a obsolescência vira computação</tspan>
+                  </text>
+                </svg></a
+              >
               <figcaption>
                 Figura 2 – A nota que apodrece em silêncio e a afirmação ancorada que vence sozinha quando o código
                 muda.
@@ -1669,14 +2565,714 @@
             </p>
             <figure class="fig">
               <a class="plate" href="figures/pt-BR/fig3.svg" title="abrir em tamanho real"
-                ><img
-                  src="figures/pt-BR/fig3.svg"
+                ><svg
+                  class="fig-svg"
+                  data-fig="second-brain-fig3"
+                  xmlns="http://www.w3.org/2000/svg"
                   width="1000"
                   height="640"
-                  loading="lazy"
-                  decoding="async"
-                  alt="Figura 3 – Ciclo de vida de uma afirmação no Finite Monkey: fontes, quarentena, verificação, invalidação e o que chega ao contexto."
-              /></a>
+                  viewBox="0 0 1000 640"
+                  role="img"
+                  aria-label="Figura 3 – Ciclo de vida de uma afirmação no Finite Monkey: fontes, quarentena, verificação, invalidação e o que chega ao contexto."
+                >
+                  <title>Ciclo de vida de uma afirmação no Finite Monkey</title>
+                  <defs>
+                    <pattern
+                      id="second-brain-fig3-hatch"
+                      width="8"
+                      height="8"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <rect width="8" height="8" fill="#fee2e2" />
+                      <line x1="0" y1="0" x2="0" y2="8" stroke="#dc2626" stroke-width="2.2" />
+                    </pattern>
+                    <marker
+                      id="second-brain-fig3-arrow"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig3-arrowm"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig3-arrowr"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig3-arrowg"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#059669" />
+                    </marker>
+                  </defs>
+                  <rect x="0" y="0" width="1000" height="640" fill="#ffffff" stroke="none" stroke-width="0" rx="0" />
+                  <text
+                    x="500.0"
+                    y="36"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="19"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="500.0" dy="0.0">Ciclo de vida de uma afirmação no Finite Monkey</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.000"
+                    x="110"
+                    y="80"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="110" dy="0.0">Fontes</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.050"
+                    x="20"
+                    y="95"
+                    width="180"
+                    height="42"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.170"
+                    x="110"
+                    y="121"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="110" dy="0.0">Código e testes</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.400"
+                    data-d="0.300"
+                    x1="202"
+                    y1="116"
+                    x2="318"
+                    y2="215"
+                    stroke="#6b7280"
+                    stroke-width="1.2"
+                    marker-end="url(#second-brain-fig3-arrowm)"
+                  />
+                  <rect
+                    data-a="slide"
+                    data-t="0.120"
+                    x="20"
+                    y="151"
+                    width="180"
+                    height="42"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.240"
+                    x="110"
+                    y="177"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="110" dy="0.0">Evidência do livro</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.450"
+                    data-d="0.300"
+                    x1="202"
+                    y1="172"
+                    x2="318"
+                    y2="215"
+                    stroke="#6b7280"
+                    stroke-width="1.2"
+                    marker-end="url(#second-brain-fig3-arrowm)"
+                  />
+                  <rect
+                    data-a="slide"
+                    data-t="0.190"
+                    x="20"
+                    y="207"
+                    width="180"
+                    height="42"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.310"
+                    x="110"
+                    y="233"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="110" dy="0.0">Pedido da pessoa</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.500"
+                    data-d="0.300"
+                    x1="202"
+                    y1="228"
+                    x2="318"
+                    y2="215"
+                    stroke="#6b7280"
+                    stroke-width="1.2"
+                    marker-end="url(#second-brain-fig3-arrowm)"
+                  />
+                  <rect
+                    data-a="slide"
+                    data-t="0.260"
+                    x="20"
+                    y="263"
+                    width="180"
+                    height="42"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.380"
+                    x="110"
+                    y="289"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="110" dy="0.0">Frase da decisão</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.550"
+                    data-d="0.300"
+                    x1="202"
+                    y1="284"
+                    x2="318"
+                    y2="215"
+                    stroke="#6b7280"
+                    stroke-width="1.2"
+                    marker-end="url(#second-brain-fig3-arrowm)"
+                  />
+                  <rect
+                    data-a="slide"
+                    data-t="0.330"
+                    x="20"
+                    y="319"
+                    width="180"
+                    height="42"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.450"
+                    x="110"
+                    y="345"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="110" dy="0.0">Regra compilada</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.600"
+                    data-d="0.300"
+                    x1="202"
+                    y1="340"
+                    x2="318"
+                    y2="215"
+                    stroke="#6b7280"
+                    stroke-width="1.2"
+                    marker-end="url(#second-brain-fig3-arrowm)"
+                  />
+                  <rect
+                    data-a="slide"
+                    data-t="0.950"
+                    x="20"
+                    y="440"
+                    width="180"
+                    height="52"
+                    fill="#fee2e2"
+                    stroke="#dc2626"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.070"
+                    x="110"
+                    y="462"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="110" dy="0.0">Conteúdo externo</tspan>
+                    <tspan x="110" dy="16.2">(página, issue, ferramenta)</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="1.100"
+                    x="250"
+                    y="440"
+                    width="170"
+                    height="52"
+                    fill="url(#second-brain-fig3-hatch)"
+                    stroke="#dc2626"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <rect
+                    data-a="fade"
+                    data-t="1.220"
+                    x="258"
+                    y="448"
+                    width="154"
+                    height="36"
+                    fill="#ffffff"
+                    stroke="none"
+                    stroke-width="0"
+                    rx="4"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.270"
+                    x="335"
+                    y="471"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="335" dy="0.0">Quarentena</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="1.050"
+                    data-d="0.200"
+                    x1="202"
+                    y1="466"
+                    x2="248"
+                    y2="466"
+                    stroke="#dc2626"
+                    stroke-width="1.6"
+                    marker-end="url(#second-brain-fig3-arrowr)"
+                  />
+                  <path
+                    data-a="draw"
+                    data-t="1.300"
+                    data-d="0.350"
+                    d="M335,438 L335,300"
+                    fill="none"
+                    stroke="#dc2626"
+                    stroke-width="1.6"
+                    marker-end="url(#second-brain-fig3-arrowr)"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.400"
+                    x="345"
+                    y="380"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#dc2626"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="345" dy="0.0">só com confirmação</tspan>
+                    <tspan x="345" dy="15.0">da pessoa</tspan>
+                  </text>
+                  <rect
+                    data-a="pop"
+                    data-t="0.600"
+                    x="320"
+                    y="160"
+                    width="220"
+                    height="135"
+                    fill="#ffffff"
+                    stroke="#1f2937"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="pop"
+                    data-t="0.600"
+                    x="334"
+                    y="186"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="334" dy="0.0">Afirmação</tspan>
+                  </text>
+                  <text
+                    data-a="pop"
+                    data-t="0.600"
+                    x="334"
+                    y="210"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="334" dy="0.0">âncora: caminho, símbolo,</tspan>
+                    <tspan x="334" dy="16.2">hash do trecho</tspan>
+                    <tspan x="334" dy="16.2">tipo: check ou prose</tspan>
+                    <tspan x="334" dy="16.2">origem e dois tempos</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="0.900"
+                    x="600"
+                    y="160"
+                    width="170"
+                    height="100"
+                    fill="#dbeafe"
+                    stroke="#2563eb"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.020"
+                    x="614"
+                    y="186"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="614" dy="0.0">Verificação</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.070"
+                    x="614"
+                    y="210"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="614" dy="0.0">check roda no gate;</tspan>
+                    <tspan x="614" dy="16.2">prose fica marcada</tspan>
+                    <tspan x="614" dy="16.2">como não verificada</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.850"
+                    data-d="0.200"
+                    x1="542"
+                    y1="210"
+                    x2="598"
+                    y2="210"
+                    stroke="#1f2937"
+                    stroke-width="1.6"
+                    marker-end="url(#second-brain-fig3-arrow)"
+                  />
+                  <rect
+                    data-a="slide"
+                    data-t="1.150"
+                    x="820"
+                    y="140"
+                    width="160"
+                    height="140"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.270"
+                    x="834"
+                    y="166"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="834" dy="0.0">Contexto</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.320"
+                    x="834"
+                    y="190"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="834" dy="0.0">só válidas,</tspan>
+                    <tspan x="834" dy="16.2">dentro do</tspan>
+                    <tspan x="834" dy="16.2">orçamento,</tspan>
+                    <tspan x="834" dy="16.2">medidas por</tspan>
+                    <tspan x="834" dy="16.2">braço A/B</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="1.100"
+                    data-d="0.200"
+                    x1="772"
+                    y1="210"
+                    x2="818"
+                    y2="210"
+                    stroke="#059669"
+                    stroke-width="1.8"
+                    marker-end="url(#second-brain-fig3-arrowg)"
+                  />
+                  <rect
+                    data-a="slide"
+                    data-t="1.600"
+                    x="600"
+                    y="330"
+                    width="170"
+                    height="90"
+                    fill="#fef3c7"
+                    stroke="#d97706"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.720"
+                    x="614"
+                    y="356"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="614" dy="0.0">Obsoleta</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.770"
+                    x="614"
+                    y="380"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="614" dy="0.0">fora do contexto;</tspan>
+                    <tspan x="614" dy="16.2">dependentes caem</tspan>
+                    <tspan x="614" dy="16.2">junto</tspan>
+                  </text>
+                  <path
+                    data-a="draw"
+                    data-t="1.800"
+                    data-d="0.250"
+                    d="M685,328 L685,262"
+                    fill="none"
+                    stroke="#d97706"
+                    stroke-width="1.6"
+                    marker-end="url(#second-brain-fig3-arrow)"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.900"
+                    x="695"
+                    y="300"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#d97706"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="695" dy="0.0">revalidar</tspan>
+                  </text>
+                  <path
+                    data-a="draw"
+                    data-t="1.400"
+                    data-d="0.350"
+                    d="M900,282 L900,375 L772,375"
+                    fill="none"
+                    stroke="#d97706"
+                    stroke-width="1.6"
+                    marker-end="url(#second-brain-fig3-arrow)"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.500"
+                    x="905"
+                    y="335"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#d97706"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="905" dy="0.0">código</tspan>
+                    <tspan x="905" dy="15.0">mudou</tspan>
+                  </text>
+                  <rect
+                    data-a="slide"
+                    data-t="1.750"
+                    x="600"
+                    y="480"
+                    width="380"
+                    height="110"
+                    fill="#f3f4f6"
+                    stroke="#9ca3af"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.870"
+                    x="614"
+                    y="506"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="614" dy="0.0">Texto derivado (cache)</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.920"
+                    x="614"
+                    y="530"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="614" dy="0.0">mapa, resumos de módulo, passagem de turno:</tspan>
+                    <tspan x="614" dy="16.2">chaveado pelo hash das entradas e regenerado</tspan>
+                    <tspan x="614" dy="16.2">quando elas mudam</tspan>
+                  </text>
+                  <path
+                    data-a="draw"
+                    data-t="1.750"
+                    data-d="0.150"
+                    d="M900,282 L900,300"
+                    fill="none"
+                    stroke="#9ca3af"
+                    stroke-width="0"
+                  />
+                  <path
+                    data-a="fade"
+                    data-t="1.950"
+                    data-d="0.500"
+                    d="M650,478 C560,520 470,420 430,300"
+                    fill="none"
+                    stroke="#6b7280"
+                    stroke-width="1.6"
+                    stroke-dasharray="6 4"
+                    marker-end="url(#second-brain-fig3-arrowm)"
+                  />
+                  <line
+                    data-a="draw"
+                    data-t="2.200"
+                    data-d="0.150"
+                    x1="509"
+                    y1="438"
+                    x2="533"
+                    y2="462"
+                    stroke="#dc2626"
+                    stroke-width="3"
+                  />
+                  <line
+                    data-a="draw"
+                    data-t="2.280"
+                    data-d="0.150"
+                    x1="533"
+                    y1="438"
+                    x2="509"
+                    y2="462"
+                    stroke="#dc2626"
+                    stroke-width="3"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="2.300"
+                    x="521"
+                    y="490"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#dc2626"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="521" dy="0.0">nunca volta</tspan>
+                    <tspan x="521" dy="15.0">como fonte</tspan>
+                  </text>
+                </svg></a
+              >
               <figcaption>
                 Figura 3 – Ciclo de vida de uma afirmação no Finite Monkey: fontes, quarentena, verificação, invalidação
                 e o que chega ao contexto. <span class="src">Fonte: elaboração própria (2026).</span>
@@ -1731,14 +3327,317 @@
             <p>A Figura 4 mostra a escada de recuperação com o custo de cada degrau.</p>
             <figure class="fig">
               <a class="plate" href="figures/pt-BR/fig4.svg" title="abrir em tamanho real"
-                ><img
-                  src="figures/pt-BR/fig4.svg"
+                ><svg
+                  class="fig-svg"
+                  data-fig="second-brain-fig4"
+                  xmlns="http://www.w3.org/2000/svg"
                   width="980"
                   height="520"
-                  loading="lazy"
-                  decoding="async"
-                  alt="Figura 4 – A escada de recuperação: cada degrau só é usado quando o anterior não respondeu, e o último só existe se um braço local mostrar ganho."
-              /></a>
+                  viewBox="0 0 980 520"
+                  role="img"
+                  aria-label="Figura 4 – A escada de recuperação: cada degrau só é usado quando o anterior não respondeu, e o último só existe se um braço local mostrar ganho."
+                >
+                  <title>Escada de recuperação: grep primeiro, modelo por último</title>
+                  <defs>
+                    <pattern
+                      id="second-brain-fig4-hatch"
+                      width="8"
+                      height="8"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <rect width="8" height="8" fill="#fee2e2" />
+                      <line x1="0" y1="0" x2="0" y2="8" stroke="#dc2626" stroke-width="2.2" />
+                    </pattern>
+                    <marker
+                      id="second-brain-fig4-arrow"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig4-arrowm"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig4-arrowr"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig4-arrowg"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#059669" />
+                    </marker>
+                  </defs>
+                  <rect x="0" y="0" width="980" height="520" fill="#ffffff" stroke="none" stroke-width="0" rx="0" />
+                  <text
+                    x="490.0"
+                    y="36"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="19"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="490.0" dy="0.0">Escada de recuperação: grep primeiro, modelo por último</tspan>
+                  </text>
+                  <rect
+                    data-a="up"
+                    data-t="0.100"
+                    data-d="0.450"
+                    x="30"
+                    y="340"
+                    width="215"
+                    height="110"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.400"
+                    x="44"
+                    y="368"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="44" dy="0.0">1. Grep e símbolo</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.460"
+                    x="44"
+                    y="392"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="44" dy="0.0">Busca lexical exata.</tspan>
+                    <tspan x="44" dy="16.2">Milissegundos,</tspan>
+                    <tspan x="44" dy="16.2">sem modelo.</tspan>
+                  </text>
+                  <rect
+                    data-a="up"
+                    data-t="0.250"
+                    data-d="0.450"
+                    x="267"
+                    y="265"
+                    width="215"
+                    height="185"
+                    fill="#d1fae5"
+                    stroke="#059669"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.550"
+                    x="281"
+                    y="293"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="281" dy="0.0">2. Mapa estrutural</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.610"
+                    x="281"
+                    y="317"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="281" dy="0.0">Arquivos ranqueados</tspan>
+                    <tspan x="281" dy="16.2">por dependência,</tspan>
+                    <tspan x="281" dy="16.2">cacheado por hash da</tspan>
+                    <tspan x="281" dy="16.2">árvore.</tspan>
+                  </text>
+                  <rect
+                    data-a="up"
+                    data-t="0.400"
+                    data-d="0.450"
+                    x="504"
+                    y="190"
+                    width="215"
+                    height="260"
+                    fill="#dbeafe"
+                    stroke="#2563eb"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.700"
+                    x="518"
+                    y="218"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="518" dy="0.0">3. BM25 nas afirmações</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.760"
+                    x="518"
+                    y="242"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="518" dy="0.0">Só afirmações válidas</tspan>
+                    <tspan x="518" dy="16.2">e registros de decisão.</tspan>
+                    <tspan x="518" dy="16.2">Devolve trecho com</tspan>
+                    <tspan x="518" dy="16.2">âncora, não resumo.</tspan>
+                  </text>
+                  <rect
+                    data-a="up"
+                    data-t="0.550"
+                    data-d="0.450"
+                    x="741"
+                    y="115"
+                    width="215"
+                    height="335"
+                    fill="url(#second-brain-fig4-hatch)"
+                    stroke="#dc2626"
+                    stroke-width="1.5"
+                    rx="6"
+                  />
+                  <rect
+                    data-a="fade"
+                    data-t="0.850"
+                    x="749"
+                    y="123"
+                    width="199"
+                    height="118"
+                    fill="#ffffff"
+                    stroke="none"
+                    stroke-width="0"
+                    rx="4"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.910"
+                    x="755"
+                    y="143"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="15"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="bold"
+                  >
+                    <tspan x="755" dy="0.0">4. Embeddings ou busca</tspan>
+                    <tspan x="755" dy="18.8">longa</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.970"
+                    x="755"
+                    y="186"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="755" dy="0.0">Só existe se um braço</tspan>
+                    <tspan x="755" dy="16.2">local mostrar ganho.</tspan>
+                    <tspan x="755" dy="16.2">Custo alto em tokens</tspan>
+                    <tspan x="755" dy="16.2">e tempo.</tspan>
+                  </text>
+                  <line
+                    data-a="draw"
+                    data-t="0.000"
+                    data-d="0.500"
+                    x1="30"
+                    y1="450"
+                    x2="950"
+                    y2="450"
+                    stroke="#1f2937"
+                    stroke-width="1.2"
+                  />
+                  <line
+                    data-a="draw"
+                    data-t="0.600"
+                    data-d="0.900"
+                    x1="40"
+                    y1="480"
+                    x2="940"
+                    y2="480"
+                    stroke="#6b7280"
+                    stroke-width="1.4"
+                    marker-end="url(#second-brain-fig4-arrowm)"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.100"
+                    x="40"
+                    y="502"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#6b7280"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="40" dy="0.0">custo por consulta e risco de distrator crescem para a direita</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.200"
+                    x="950"
+                    y="80"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="end"
+                    font-weight="normal"
+                    font-style="italic"
+                  >
+                    <tspan x="950" dy="0.0">cada degrau registra se respondeu e quanto custou</tspan>
+                  </text>
+                </svg></a
+              >
               <figcaption>
                 Figura 4 – A escada de recuperação: cada degrau só é usado quando o anterior não respondeu, e o último
                 só existe se um braço local mostrar ganho.
@@ -1867,14 +3766,699 @@
             </p>
             <figure class="fig">
               <a class="plate" href="figures/pt-BR/fig5.svg" title="abrir em tamanho real"
-                ><img
-                  src="figures/pt-BR/fig5.svg"
+                ><svg
+                  class="fig-svg"
+                  data-fig="second-brain-fig5"
+                  xmlns="http://www.w3.org/2000/svg"
                   width="980"
                   height="520"
-                  loading="lazy"
-                  decoding="async"
-                  alt="Figura 5 – Mapa de quem sabe o quê por área do projeto: onde o conhecimento está demonstrado pela pessoa, só verificado, só no agente ou em ninguém. Dados ilustrativos."
-              /></a>
+                  viewBox="0 0 980 520"
+                  role="img"
+                  aria-label="Figura 5 – Mapa de quem sabe o quê por área do projeto: onde o conhecimento está demonstrado pela pessoa, só verificado, só no agente ou em ninguém. Dados ilustrativos."
+                >
+                  <title>Quem sabe o quê, por área do projeto</title>
+                  <defs>
+                    <pattern
+                      id="second-brain-fig5-hatch"
+                      width="8"
+                      height="8"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <rect width="8" height="8" fill="#fee2e2" />
+                      <line x1="0" y1="0" x2="0" y2="8" stroke="#dc2626" stroke-width="2.2" />
+                    </pattern>
+                    <marker
+                      id="second-brain-fig5-arrow"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig5-arrowm"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig5-arrowr"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626" />
+                    </marker>
+                    <marker
+                      id="second-brain-fig5-arrowg"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="7"
+                      markerHeight="7"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0,0 L10,5 L0,10 z" fill="#059669" />
+                    </marker>
+                  </defs>
+                  <rect x="0" y="0" width="980" height="520" fill="#ffffff" stroke="none" stroke-width="0" rx="0" />
+                  <text
+                    x="490.0"
+                    y="36"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="19"
+                    fill="#1f2937"
+                    text-anchor="middle"
+                    font-weight="bold"
+                  >
+                    <tspan x="490.0" dy="0.0">Quem sabe o quê, por área do projeto</tspan>
+                  </text>
+                  <text
+                    x="490.0"
+                    y="60"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="normal"
+                    font-style="italic"
+                  >
+                    <tspan x="490.0" dy="0.0">dados ilustrativos</tspan>
+                  </text>
+                  <line
+                    data-a="fade"
+                    data-t="0.000"
+                    x1="220.0"
+                    y1="85"
+                    x2="220.0"
+                    y2="395"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.030"
+                    x="220.0"
+                    y="415"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="220.0" dy="0.0">0%</tspan>
+                  </text>
+                  <line
+                    data-a="fade"
+                    data-t="0.060"
+                    x1="390.0"
+                    y1="85"
+                    x2="390.0"
+                    y2="395"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.090"
+                    x="390.0"
+                    y="415"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="390.0" dy="0.0">25%</tspan>
+                  </text>
+                  <line
+                    data-a="fade"
+                    data-t="0.120"
+                    x1="560.0"
+                    y1="85"
+                    x2="560.0"
+                    y2="395"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.150"
+                    x="560.0"
+                    y="415"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="560.0" dy="0.0">50%</tspan>
+                  </text>
+                  <line
+                    data-a="fade"
+                    data-t="0.180"
+                    x1="730.0"
+                    y1="85"
+                    x2="730.0"
+                    y2="395"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.210"
+                    x="730.0"
+                    y="415"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="730.0" dy="0.0">75%</tspan>
+                  </text>
+                  <line
+                    data-a="fade"
+                    data-t="0.240"
+                    x1="900.0"
+                    y1="85"
+                    x2="900.0"
+                    y2="395"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.270"
+                    x="900.0"
+                    y="415"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="12"
+                    fill="#6b7280"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="900.0" dy="0.0">100%</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="0.150"
+                    x="208"
+                    y="117"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="end"
+                    font-weight="normal"
+                  >
+                    <tspan x="208" dy="0.0">Checkout</tspan>
+                  </text>
+                  <rect
+                    data-a="right"
+                    data-t="0.200"
+                    data-d="0.450"
+                    data-c="1"
+                    x="220"
+                    y="95"
+                    width="408.0"
+                    height="32"
+                    fill="#a7f3d0"
+                    stroke="#059669"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.650"
+                    data-d="0.225"
+                    data-c="1"
+                    x="628.0"
+                    y="95"
+                    width="204.0"
+                    height="32"
+                    fill="#bfdbfe"
+                    stroke="#2563eb"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.875"
+                    data-d="0.075"
+                    data-c="1"
+                    x="832.0"
+                    y="95"
+                    width="68.0"
+                    height="32"
+                    fill="#fde68a"
+                    stroke="#d97706"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.250"
+                    x="208"
+                    y="167"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="end"
+                    font-weight="normal"
+                  >
+                    <tspan x="208" dy="0.0">Autenticação</tspan>
+                  </text>
+                  <rect
+                    data-a="right"
+                    data-t="0.300"
+                    data-d="0.150"
+                    data-c="1"
+                    x="220"
+                    y="145"
+                    width="136.0"
+                    height="32"
+                    fill="#a7f3d0"
+                    stroke="#059669"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.450"
+                    data-d="0.375"
+                    data-c="1"
+                    x="356.0"
+                    y="145"
+                    width="340.0"
+                    height="32"
+                    fill="#bfdbfe"
+                    stroke="#2563eb"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.825"
+                    data-d="0.188"
+                    data-c="1"
+                    x="696.0"
+                    y="145"
+                    width="170.0"
+                    height="32"
+                    fill="#fde68a"
+                    stroke="#d97706"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="1.012"
+                    data-d="0.037"
+                    data-c="1"
+                    x="866.0"
+                    y="145"
+                    width="34.0"
+                    height="32"
+                    fill="url(#second-brain-fig5-hatch)"
+                    stroke="#dc2626"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.350"
+                    x="208"
+                    y="217"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="end"
+                    font-weight="normal"
+                  >
+                    <tspan x="208" dy="0.0">Notificações</tspan>
+                  </text>
+                  <rect
+                    data-a="right"
+                    data-t="0.400"
+                    data-d="0.263"
+                    data-c="1"
+                    x="220.0"
+                    y="195"
+                    width="238.0"
+                    height="32"
+                    fill="#bfdbfe"
+                    stroke="#2563eb"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.662"
+                    data-d="0.412"
+                    data-c="1"
+                    x="458.0"
+                    y="195"
+                    width="374.0"
+                    height="32"
+                    fill="#fde68a"
+                    stroke="#d97706"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="1.075"
+                    data-d="0.075"
+                    data-c="1"
+                    x="832.0"
+                    y="195"
+                    width="68.0"
+                    height="32"
+                    fill="url(#second-brain-fig5-hatch)"
+                    stroke="#dc2626"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.450"
+                    x="208"
+                    y="267"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="end"
+                    font-weight="normal"
+                  >
+                    <tspan x="208" dy="0.0">Relatórios</tspan>
+                  </text>
+                  <rect
+                    data-a="right"
+                    data-t="0.500"
+                    data-d="0.075"
+                    data-c="1"
+                    x="220"
+                    y="245"
+                    width="68.0"
+                    height="32"
+                    fill="#a7f3d0"
+                    stroke="#059669"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.575"
+                    data-d="0.113"
+                    data-c="1"
+                    x="288.0"
+                    y="245"
+                    width="102.0"
+                    height="32"
+                    fill="#bfdbfe"
+                    stroke="#2563eb"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.688"
+                    data-d="0.225"
+                    data-c="1"
+                    x="390.0"
+                    y="245"
+                    width="204.0"
+                    height="32"
+                    fill="#fde68a"
+                    stroke="#d97706"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.912"
+                    data-d="0.338"
+                    data-c="1"
+                    x="594.0"
+                    y="245"
+                    width="306.0"
+                    height="32"
+                    fill="url(#second-brain-fig5-hatch)"
+                    stroke="#dc2626"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.550"
+                    x="208"
+                    y="317"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="end"
+                    font-weight="normal"
+                  >
+                    <tspan x="208" dy="0.0">Cadastro</tspan>
+                  </text>
+                  <rect
+                    data-a="right"
+                    data-t="0.600"
+                    data-d="0.338"
+                    data-c="1"
+                    x="220"
+                    y="295"
+                    width="306.0"
+                    height="32"
+                    fill="#a7f3d0"
+                    stroke="#059669"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.938"
+                    data-d="0.300"
+                    data-c="1"
+                    x="526.0"
+                    y="295"
+                    width="272.0"
+                    height="32"
+                    fill="#bfdbfe"
+                    stroke="#2563eb"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="1.238"
+                    data-d="0.113"
+                    data-c="1"
+                    x="798.0"
+                    y="295"
+                    width="102.0"
+                    height="32"
+                    fill="#fde68a"
+                    stroke="#d97706"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="0.650"
+                    x="208"
+                    y="367"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="14"
+                    fill="#1f2937"
+                    text-anchor="end"
+                    font-weight="normal"
+                  >
+                    <tspan x="208" dy="0.0">Deploy</tspan>
+                  </text>
+                  <rect
+                    data-a="right"
+                    data-t="0.700"
+                    data-d="0.037"
+                    data-c="1"
+                    x="220"
+                    y="345"
+                    width="34.0"
+                    height="32"
+                    fill="#a7f3d0"
+                    stroke="#059669"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.738"
+                    data-d="0.150"
+                    data-c="1"
+                    x="254.0"
+                    y="345"
+                    width="136.0"
+                    height="32"
+                    fill="#bfdbfe"
+                    stroke="#2563eb"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="0.888"
+                    data-d="0.487"
+                    data-c="1"
+                    x="390.0"
+                    y="345"
+                    width="442.0"
+                    height="32"
+                    fill="#fde68a"
+                    stroke="#d97706"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="right"
+                    data-t="1.375"
+                    data-d="0.075"
+                    data-c="1"
+                    x="832.0"
+                    y="345"
+                    width="68.0"
+                    height="32"
+                    fill="url(#second-brain-fig5-hatch)"
+                    stroke="#dc2626"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <rect
+                    data-a="fade"
+                    data-t="1.300"
+                    x="120"
+                    y="445"
+                    width="18"
+                    height="16"
+                    fill="#a7f3d0"
+                    stroke="#059669"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.340"
+                    x="146"
+                    y="458"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="146" dy="0.0">Demonstrado pela pessoa</tspan>
+                  </text>
+                  <rect
+                    data-a="fade"
+                    data-t="1.380"
+                    x="325"
+                    y="445"
+                    width="18"
+                    height="16"
+                    fill="#bfdbfe"
+                    stroke="#2563eb"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.420"
+                    x="351"
+                    y="458"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="351" dy="0.0">Só verificado</tspan>
+                  </text>
+                  <rect
+                    data-a="fade"
+                    data-t="1.460"
+                    x="530"
+                    y="445"
+                    width="18"
+                    height="16"
+                    fill="#fde68a"
+                    stroke="#d97706"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.500"
+                    x="556"
+                    y="458"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="556" dy="0.0">Só no agente</tspan>
+                  </text>
+                  <rect
+                    data-a="fade"
+                    data-t="1.540"
+                    x="735"
+                    y="445"
+                    width="18"
+                    height="16"
+                    fill="url(#second-brain-fig5-hatch)"
+                    stroke="#dc2626"
+                    stroke-width="1"
+                    rx="0"
+                  />
+                  <text
+                    data-a="fade"
+                    data-t="1.580"
+                    x="761"
+                    y="458"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#1f2937"
+                    text-anchor="start"
+                    font-weight="normal"
+                  >
+                    <tspan x="761" dy="0.0">Em ninguém</tspan>
+                  </text>
+                  <text
+                    data-a="fade"
+                    data-t="1.600"
+                    x="490.0"
+                    y="498"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-size="13"
+                    fill="#dc2626"
+                    text-anchor="middle"
+                    font-weight="normal"
+                  >
+                    <tspan x="490.0" dy="0.0">Áreas que só o agente "conhece" são risco: um bus factor de um.</tspan>
+                  </text>
+                </svg></a
+              >
               <figcaption>
                 Figura 5 – Mapa de quem sabe o quê por área do projeto: onde o conhecimento está demonstrado pela
                 pessoa, só verificado, só no agente ou em ninguém. Dados ilustrativos.
@@ -2548,5 +5132,9 @@
         });
       })();
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+    <script defer src="../../brand.js"></script>
+    <script defer src="../figures.js"></script>
   </body>
 </html>

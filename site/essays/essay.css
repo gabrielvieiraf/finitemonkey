@@ -268,6 +268,15 @@ body {
 }
 .prose-long p {
   margin: 0 0 1.05em;
+  text-wrap: pretty;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+@media (min-width: 640px) {
+  .prose-long > p:not(.ref, .kw, .end) {
+    text-align: justify;
+    hyphenate-limit-chars: 7 3 3;
+  }
 }
 .prose-long h2,
 .prose-long h3 {
@@ -313,6 +322,8 @@ body {
   font-weight: 600;
 }
 .prose-long code {
+  -webkit-hyphens: manual;
+  hyphens: manual;
   font-family: var(--mono);
   font-size: 0.8em;
   background: var(--grid);
@@ -368,7 +379,8 @@ body {
 .fig .plate:hover {
   border-color: var(--you);
 }
-.fig img {
+.fig img,
+.fig .fig-svg {
   display: block;
   width: 100%;
   height: auto;

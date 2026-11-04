@@ -1,3 +1,4 @@
+import { brandLink } from "./essays-brand.js";
 import { escapeHtml, type Heading } from "./essays-markdown.js";
 import { type Essay, type Lang, LANGS, SITE, UI } from "./essays-text.js";
 
@@ -34,6 +35,15 @@ const NEGOTIATE = `<script>
   if (files[want]) location.replace(files[want] + location.hash);
 })();
 </script>`;
+
+const GSAP = "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist";
+
+const SCRIPTS = [
+  `<script defer src="${GSAP}/gsap.min.js"></script>`,
+  `<script defer src="${GSAP}/ScrollTrigger.min.js"></script>`,
+  `<script defer src="../../brand.js"></script>`,
+  `<script defer src="../figures.js"></script>`,
+].join("\n");
 
 const BEHAVIOR = `<script>
 (function () {
@@ -79,6 +89,9 @@ function head(input: PageInput): string {
   ).join("\n");
   return `<head>
 <meta charset="utf-8" />
+<script>
+document.documentElement.classList.add("js");
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${title} · Finite Monkey</title>
 <meta name="description" content="${summary}" />
@@ -109,7 +122,7 @@ function bar(input: PageInput): string {
       `<a href="${pageHref(l)}" hreflang="${UI[l].htmlLang}" lang="${UI[l].htmlLang}" data-lang="${l}"${l === input.lang ? ' aria-current="page"' : ""}>${LABEL[l]}</a>`,
   ).join("");
   return `<header class="bar">
-<a class="brand" href="${home(input.lang)}">finitemonkey</a>
+${brandLink(home(input.lang))}
 <span class="tag">${escapeHtml(ui.essay(input.essay.number))}</span>
 <nav class="nav" aria-label="Site">
 <a href="${home(input.lang, "#essays")}">${escapeHtml(ui.essays)}</a>
@@ -174,6 +187,7 @@ ${input.body}
 </footer>
 </div>
 ${BEHAVIOR}
+${SCRIPTS}
 </body>
 </html>
 `;
