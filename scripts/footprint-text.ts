@@ -5,6 +5,7 @@ import { COPY_FOOTPRINT_TEXT } from "./footprint-text-copy.js";
 import { GUARDIAN_FOOTPRINT_TEXT } from "./footprint-text-guardian.js";
 import { MERGE_FOOTPRINT_TEXT } from "./footprint-text-merge.js";
 import { PROVIDER_FOOTPRINT_TEXT } from "./footprint-text-provider.js";
+import { SETUP_FOOTPRINT_TEXT } from "./footprint-text-setup.js";
 import { STAGE3_FOOTPRINT_TEXT } from "./footprint-text-stage3.js";
 
 export const LANGS = ["en", "pt-BR", "es"] as const;
@@ -18,17 +19,7 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
   ...GUARDIAN_FOOTPRINT_TEXT,
   ...COPY_FOOTPRINT_TEXT,
   ...MERGE_FOOTPRINT_TEXT,
-  "hook-input": {
-    en: "The event Claude Code passes to each hook: the tool call, the prompt or the stop request.",
-    "pt-BR": "O evento que o Claude Code passa a cada hook: a chamada de ferramenta, o prompt ou o pedido de parada.",
-    es: "El evento que Claude Code pasa a cada hook: la llamada a la herramienta, el prompt o la petición de parada.",
-  },
-  "claude-settings": {
-    en: "Claude Code settings, to check that the hooks are installed and nothing switches them off. `$CLAUDE_CONFIG_DIR` replaces `~/.claude` when set.",
-    "pt-BR":
-      "As configurações do Claude Code, para conferir que os hooks estão instalados e que nada os desliga. `$CLAUDE_CONFIG_DIR` substitui `~/.claude` quando definido.",
-    es: "La configuración de Claude Code, para comprobar que los hooks están instalados y que nada los desactiva. `$CLAUDE_CONFIG_DIR` reemplaza `~/.claude` si está definido.",
-  },
+  ...SETUP_FOOTPRINT_TEXT,
   instructions: {
     en: "Instruction files, read by `doctor` to report rules that exist only as text.",
     "pt-BR": "Arquivos de instrução, lidos pelo `doctor` para apontar regras que só existem como texto.",
