@@ -229,7 +229,7 @@ describe("tests guard: a test file this session created (timezone-report)", () =
 
 describe("tests guard: reading a restore command", () => {
   const isTree = (rev: string): boolean => rev === "HEAD" || rev === "main";
-  const of = (argv: readonly string[]) => restoreOf({ env: {}, argv, redirects: [] }, isTree);
+  const of = (argv: readonly string[]) => restoreOf({ env: {}, argv, redirects: [], outputs: [] }, isTree);
   const cases = [
     [["git", "checkout", "test/a.test.js"], { source: undefined, paths: ["test/a.test.js"] }],
     [["git", "checkout", "--", "test/a.test.js"], { source: undefined, paths: ["test/a.test.js"] }],

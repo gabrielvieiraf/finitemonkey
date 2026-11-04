@@ -96,7 +96,7 @@ const failedOutput = (raw: JsonObject): string | undefined => {
   return [textField(response, "stdout") ?? "", textField(response, "stderr") ?? ""].join("\n");
 };
 
-const SHELL_TOOLS = new Set(["Bash", "PowerShell"]);
+export const SHELL_TOOLS = new Set(["Bash", "PowerShell"]);
 const NAMED_FILE = /[\w@./\\-]*[\w-]\.[A-Za-z][A-Za-z0-9]{0,5}(?=[:("'\s,]|$)/g;
 const MAX_NAMED = 20;
 

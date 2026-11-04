@@ -1,10 +1,13 @@
+import { isAbsolute } from "node:path";
+
 import type { HookInput } from "../hooks/handlers.js";
 import { trialFor } from "../policy/evolved.js";
 import { loadBasePolicy } from "../policy/policy.js";
 import { untrustedIn } from "../policy/untrusted.js";
+import { SHELL_TOOLS } from "../signals/record.js";
 import { readEntries, type SignalEntry, signalFiles } from "../signals/store.js";
 import type { FmPaths } from "../task/paths.js";
-import { type Lesson, newLesson, readLessons, writeLessons } from "./store.js";
+import { clipWords, type Lesson, MAX_TEXT, newLesson, readLessons, writeLessons } from "./store.js";
 import { stampTree } from "./tree.js";
 
 export const MIN_REPEATS = 2;
@@ -18,24 +21,34 @@ export interface FixedSignature {
   readonly files: readonly string[];
 }
 
+const insideProject = (file: string): boolean => file !== "" && !file.startsWith("../") && !isAbsolute(file);
+
+const fixableByEdit = (entry: SignalEntry): entry is Of<"error"> =>
+  entry.kind === "error" && SHELL_TOOLS.has(entry.tool);
+
 export const fixedSignatures = (entries: readonly SignalEntry[]): readonly FixedSignature[] => {
   const errors = new Map<string, number[]>();
   entries.forEach((entry, index) => {
-    if (entry.kind === "error") errors.set(entry.sig, [...(errors.get(entry.sig) ?? []), index]);
+    if (fixableByEdit(entry)) errors.set(entry.sig, [...(errors.get(entry.sig) ?? []), index]);
   });
   return [...errors].flatMap(([sig, positions]): readonly FixedSignature[] => {
     const last = positions.at(-1);
     if (last === undefined || positions.length < MIN_REPEATS) return [];
     const after = entries.slice(last + 1);
-    const firstEdit = after.findIndex((entry) => entry.kind === "edit");
+    const isOwnEdit = (entry: SignalEntry): entry is Of<"edit"> => entry.kind === "edit" && insideProject(entry.file);
+    const firstEdit = after.findIndex(isOwnEdit);
     if (firstEdit < 0 || firstEdit === after.length - 1) return [];
-    const files = [
-      ...new Set(after.filter((entry): entry is Of<"edit"> => entry.kind === "edit").map((entry) => entry.file)),
-    ].slice(0, MAX_FILES);
+    const files = [...new Set(after.filter(isOwnEdit).map((entry) => entry.file))].slice(0, MAX_FILES);
     const lastEntry = entries[last];
     const sample = lastEntry?.kind === "error" ? lastEntry.sample : "";
     return [{ sig, sample, files }];
   });
+};
+
+const lessonText = (input: HookInput, fixed: FixedSignature): string => {
+  const files = fixed.files.join(", ");
+  const room = MAX_TEXT - input.t("learnings.from_signature", { sample: "", files }).length;
+  return input.t("learnings.from_signature", { sample: clipWords(fixed.sample, Math.max(room, 1)), files });
 };
 
 export const learnFromSignatures = (input: HookInput, paths: FmPaths): readonly Lesson[] => {
@@ -59,7 +72,7 @@ export const learnFromSignatures = (input: HookInput, paths: FmPaths): readonly 
         paths.root,
         newLesson(
           {
-            text: input.t("learnings.from_signature", { sample: fixed.sample, files: fixed.files.join(", ") }),
+            text: lessonText(input, fixed),
             paths: fixed.files,
             sig: fixed.sig,
             source: "signature",
