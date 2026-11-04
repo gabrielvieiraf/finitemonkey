@@ -28,6 +28,7 @@ const bashTargets = (command: ShellCommand): readonly string[] =>
     env: command.env,
     argv: command.program === "" ? [] : [command.program, ...command.args],
     redirects: outputs(command.redirects),
+    outputs: outputs(command.redirects),
   });
 
 const powershellTargets = (command: ShellCommand): readonly string[] => [

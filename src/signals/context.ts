@@ -1,4 +1,4 @@
-import { relative } from "node:path";
+import { isAbsolute, relative } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
 import { toPosixPath } from "../core/posix-path.js";
@@ -51,8 +51,11 @@ export const baseOf = (
   turn: scope.turn,
 });
 
-export const projectFile = (scope: SignalScope, file: string): string =>
-  toPosixPath(relative(scope.paths.root, toAbsolutePath(file, scope.paths.root)));
+export const projectFile = (scope: SignalScope, file: string): string => {
+  const absolute = toAbsolutePath(file, scope.paths.root);
+  const local = toPosixPath(relative(scope.paths.root, absolute));
+  return local.startsWith("../") || local === ".." || isAbsolute(local) ? toPosixPath(absolute) : local;
+};
 
 export const progressKey = (scope: SignalScope): string => {
   const { runtime } = scope.input;
