@@ -7,6 +7,7 @@ import type { Runtime } from "../core/runtime.js";
 import { configAt, type ConfigTree, parseConfigYaml } from "../git/project-config.js";
 import { CONFIG_FILE } from "../install/layout.js";
 import { findGitRoot } from "../install/project.js";
+import { readConversationLang } from "./conversation.js";
 import type { LangSettings } from "./languages.js";
 
 type Reader = Pick<Runtime, "readText" | "stat" | "homeDir" | "systemLocale">;
@@ -40,6 +41,7 @@ export const langSettings = (runtime: Reader, cwd: AbsolutePath, env: Env, platf
   ];
   return {
     config: configText(config, "lang"),
+    conversation: readConversationLang(runtime, root),
     reviewedOnly: configText(config, "i18n", "fallback") === "reviewed-only",
     claude: claudeFiles.map((path) => languageIn(read(runtime, path))).find((value) => value !== undefined),
     system: platform === "win32" ? runtime.systemLocale() : undefined,

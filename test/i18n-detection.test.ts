@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import { ExitCode } from "../src/exit-codes.js";
+import { conversationLangPath } from "../src/i18n/conversation.js";
 import { langSettings } from "../src/i18n/lang-settings.js";
 import { claudeLanguageToLang, detectLang } from "../src/i18n/languages.js";
 import { CONFIG_FILE, SETTINGS_FILE } from "../src/install/layout.js";
@@ -21,6 +22,13 @@ describe("language detection order", () => {
     { flag: "en", env, settings: full, lang: "en", source: "flag" },
     { flag: undefined, env, settings: full, lang: "pt-BR", source: "FINITEMONKEY_LANG" },
     { flag: undefined, env: { LC_ALL: "pt_BR" }, settings: full, lang: "es", source: "config" },
+    {
+      flag: undefined,
+      env: { LANG: "en_US.UTF-8" },
+      settings: { conversation: "pt-BR", claude: "spanish" },
+      lang: "pt-BR",
+      source: "conversation",
+    },
     {
       flag: undefined,
       env: { LC_ALL: "es_ES" },
@@ -77,7 +85,18 @@ describe("where the language settings come from", () => {
       "linux",
       "pt-BR",
     );
-    assert.deepEqual(settings, { config: "es", reviewedOnly: false, claude: "portuguese", system: undefined });
+    assert.deepEqual(settings, {
+      config: "es",
+      conversation: undefined,
+      reviewedOnly: false,
+      claude: "portuguese",
+      system: undefined,
+    });
+  });
+
+  it("reads the conversation language Finite Monkey recorded for the project", () => {
+    const settings = settingsWith({ [conversationLangPath(ROOT)]: '{"lang":"pt-BR"}' }, "linux");
+    assert.equal(settings.conversation, "pt-BR");
   });
 
   it("falls back to the user settings, honoring CLAUDE_CONFIG_DIR", () => {

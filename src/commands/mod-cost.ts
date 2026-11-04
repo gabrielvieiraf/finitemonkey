@@ -1,4 +1,5 @@
-import { costOf, parseSteps, recordSteps } from "../bridge/cost.js";
+import { billingOf } from "../bridge/billing.js";
+import { costOf, type CostSummary, parseSteps, recordSteps } from "../bridge/cost.js";
 import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
@@ -30,10 +31,22 @@ const cappedLine = (ctx: Ctx, paths: FmPaths): readonly string[] => {
   return spent > 0 && spent >= cap ? [ctx.t("provider.capped", { cap: money(cap) })] : [];
 };
 
+const tokenLines = (ctx: Ctx, cost: CostSummary, paths: FmPaths): readonly string[] => [
+  ctx.t("mod.cost.tokens", {
+    task: cost.task,
+    tokens: new Intl.NumberFormat(ctx.lang).format(cost.tokens.total),
+    requests: cost.requests,
+    attempts: cost.attempts,
+  }),
+  ...cappedLine(ctx, paths),
+];
+
 const showCost = (ctx: Ctx): CommandResult =>
   withProject(ctx, (paths) => {
     const cost = costOf(ctx.runtime, paths);
-    return success(cost, [
+    const billing = billingOf(ctx.runtime, paths.root, ctx.env);
+    if (billing === "subscription") return success({ ...cost, billing }, tokenLines(ctx, cost, paths));
+    return success({ ...cost, billing }, [
       ctx.t("mod.cost.summary", {
         task: cost.task,
         usd: money(cost.usd),

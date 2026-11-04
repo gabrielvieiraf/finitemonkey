@@ -2,6 +2,7 @@ import { type TrajectoryNow, trajectoryNowOf } from "../conceitos/trajectory-now
 import { XRAY_FEATURE } from "../conceitos/xray.js";
 import { xrayPath } from "../conceitos/xray-run.js";
 import { nowMs } from "../core/clock.js";
+import type { Env } from "../core/context.js";
 import type { Runtime } from "../core/runtime.js";
 import { readLedger } from "../evidence/ledger.js";
 import type { CompletionState, EvidenceStatus } from "../evidence/types.js";
@@ -22,6 +23,7 @@ import { type GateLight, gateLight } from "../statusline/gate-state.js";
 import { contractHash } from "../task/load.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile } from "../task/state.js";
+import { type BillingMode, billingOf } from "./billing.js";
 import { costOf } from "./cost.js";
 
 export const STATUS_SCHEMA = "finitemonkey/status@1";
@@ -64,6 +66,8 @@ export interface StatusData {
   readonly bypasses: number;
   readonly loop: { readonly count: number; readonly limit: number } | null;
   readonly cost: { readonly usd: number; readonly requests: number } | null;
+  readonly costTokens: number | null;
+  readonly billing: BillingMode;
   readonly xray: { readonly beyondWithoutCriterion: number; readonly blocks: number } | null;
   readonly knowledge: KnowledgeCounts | null;
   readonly blindBand: {
@@ -140,9 +144,11 @@ const loopOf = (runtime: Runtime, paths: FmPaths): StatusData["loop"] => {
   return { count, limit: readProfile(runtime, files).threshold + 1 };
 };
 
-const costLine = (runtime: Runtime, paths: FmPaths): StatusData["cost"] => {
+const costParts = (runtime: Runtime, paths: FmPaths): Pick<StatusData, "cost" | "costTokens"> => {
   const cost = costOf(runtime, paths);
-  return cost.requests === 0 ? null : { usd: cost.usd, requests: cost.requests };
+  return cost.requests === 0
+    ? { cost: null, costTokens: null }
+    : { cost: { usd: cost.usd, requests: cost.requests }, costTokens: cost.tokens.total };
 };
 
 const xrayLine = (runtime: Runtime, paths: FmPaths, task: string | null): StatusData["xray"] => {
@@ -176,7 +182,7 @@ const blindBandLine = (runtime: Runtime, paths: FmPaths): StatusData["blindBand"
   };
 };
 
-export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
+export const statusOf = (runtime: Runtime, paths: FmPaths, env: Env = {}): StatusData => {
   const gate = readGateStatus(runtime, paths);
   const gateAt = gate?.at ?? null;
   const found = reportOf(runtime, paths);
@@ -198,7 +204,8 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     editsSinceGate: editsSince(runtime, paths, gateAt),
     bypasses: unreviewedBypasses(runtime, paths).length,
     loop: loopOf(runtime, paths),
-    cost: costLine(runtime, paths),
+    ...costParts(runtime, paths),
+    billing: billingOf(runtime, paths.root, env),
     xray: xrayLine(runtime, paths, report?.task ?? null),
     blindBand: blindBandLine(runtime, paths),
     knowledge: knowledgeCounts(runtime, paths),

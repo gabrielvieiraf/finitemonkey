@@ -4,6 +4,7 @@ import { frontsBoardCommand } from "./fronts-board.js";
 import { handoffCommand } from "./handoff.js";
 import { modDropCommand, modRecordCommand, modStateCommand } from "./mod.js";
 import { modCostCommand, modUsageCommand } from "./mod-cost.js";
+import { modLabelsCommand } from "./mod-labels.js";
 import {
   probeAnswerCommand,
   probeCommand,
@@ -29,6 +30,7 @@ export const MOD_COMMANDS = [
   handoffCommand,
   modCostCommand,
   modUsageCommand,
+  modLabelsCommand,
   frontsBoardCommand,
   taskTrustCommand,
   conceitosEvidenceCommand,

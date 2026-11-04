@@ -37,7 +37,7 @@ const show = (ctx: Ctx): CommandResult => {
       fix: "git init",
       exitCode: ExitCode.NotConfigured,
     });
-  const data = statusOf(ctx.runtime, fmPaths(root));
+  const data = statusOf(ctx.runtime, fmPaths(root), ctx.env);
   return success(data, humanLines(ctx, data));
 };
 
