@@ -28,7 +28,7 @@ Do not break these. Every invariant names the check that enforces it. When you a
 | I12 | **The package ships only what is listed.** `files` in `package.json` is explicit. | `npm run check` (`npm pack --dry-run`) in CI |
 | I13 | **No em dashes in prose.** Use a period, a colon, a comma or parentheses. | `finitemonkey prose check` flags em dashes, but no CI step runs it on the docs **(planned)** |
 | I14 | **Nothing leaves the user's machine by default.** No telemetry, no network call that the user did not ask for. | `test/docs-generated.test.ts` fails when `src` reaches a program or host missing from `src/core/footprint.ts` or opens a socket of its own. Not yet held: the `deps` guard asks the npm or PyPI registry about a new package and `gh` asks about pull requests without a request from the user (`FINITEMONKEY_OFFLINE=1` stops the registry lookup), and no test runs the CLI with the network blocked **(planned)** |
-| I15 | **Gates fail closed.** A hook or check that cannot run blocks and says why; it never passes silently. | `test/hook.test.ts` (a handler that throws, a deadline that passes, garbage on stdin) and `test/stop.test.ts` (the stop is held once when the gate cannot run, then recorded as not run) |
+| I15 | **Gates fail closed.** A check that cannot run never passes silently: the stop says why and records not run, and `pr open` and `ci gate` refuse until a real run passes. | `test/hook.test.ts` (a handler that throws, a deadline that passes, garbage on stdin) and `test/stop.test.ts` (the stop goes through with the note when the gate cannot run, recorded as not run) |
 
 ## Working rules
 

@@ -15,7 +15,7 @@ export const FAILURE_MODES_ES: Readonly<Record<string, FailureModeText>> = {
     failure: "Una compuerta que no puede ejecutarse parece aprobada",
     cause: "Un fallo, un archivo ausente o un registro sin permiso de escritura",
     mitigation:
-      "La parada se retiene una vez con GATE DID NOT RUN y luego se deja pasar registrada como no ejecutada; `pr open` y `ci gate` se niegan hasta que pase una ejecución real",
+      "La parada pasa con un aviso GATE DID NOT RUN, mostrado una vez, y queda registrada como no ejecutada; `pr open` y `ci gate` se niegan hasta que pase una ejecución real",
   },
   "Old evidence passes new code": {
     failure: "Evidencia vieja aprueba código nuevo",
