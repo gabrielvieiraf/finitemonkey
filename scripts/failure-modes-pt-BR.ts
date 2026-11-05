@@ -15,7 +15,7 @@ export const FAILURE_MODES_PT_BR: Readonly<Record<string, FailureModeText>> = {
     failure: "Um portão que não consegue rodar parece aprovado",
     cause: "Uma falha, um arquivo ausente ou um registro sem permissão de escrita",
     mitigation:
-      "A parada é segurada uma vez com GATE DID NOT RUN e depois liberada registrada como não rodada; `pr open` e `ci gate` recusam até uma rodada real passar",
+      "A parada passa com um aviso GATE DID NOT RUN, mostrado uma vez, e fica registrada como não rodada; `pr open` e `ci gate` recusam até uma rodada real passar",
   },
   "Old evidence passes new code": {
     failure: "Evidência antiga aprova código novo",

@@ -21085,8 +21085,6 @@ var en_default = {
   "gate.verify.gh": "`gh auth login`, then `finitemonkey gate --task {task}`",
   "gate.verify.rerun": "`finitemonkey gate --task {task}`",
   "gate.human.held_unverified": "Held once: {count, plural, one {# check is} other {# checks are}} not verified ({list}). The next stop goes through and the task stays open.",
-  "gate.model.not_run": "Finite Monkey gate did not run: {detail}. Nothing was verified. Fix the cause and run `finitemonkey doctor`.",
-  "gate.human.not_run_held": "GATE DID NOT RUN: {detail}. Held this stop once; the next one goes through, recorded as not run. Run `finitemonkey doctor`.",
   "error.gate_last_not_run": "The last gate run did not run ({detail}); a real run has to pass first",
   "gate.reason.masked_exit": "the command hides its exit code",
   "gate.reason.no_test_count": "the run did not report how many tests ran",
@@ -24249,8 +24247,6 @@ var es_default = {
   "gate.verify.gh": "`gh auth login` y luego `finitemonkey gate --task {task}`",
   "gate.verify.rerun": "`finitemonkey gate --task {task}`",
   "gate.human.held_unverified": "Retuve una vez: {count, plural, one {# verificación no se hizo} other {# verificaciones no se hicieron}} ({list}). La próxima parada pasa y la tarea sigue abierta.",
-  "gate.model.not_run": "La puerta de Finite Monkey no se ejecutó: {detail}. No se verificó nada. Corrige la causa y ejecuta `finitemonkey doctor`.",
-  "gate.human.not_run_held": "LA PUERTA NO SE EJECUTÓ: {detail}. Retuve esta parada una vez; la próxima pasa, registrada como no ejecutada. Ejecuta `finitemonkey doctor`.",
   "error.gate_last_not_run": "La última ejecución de la puerta no se ejecutó ({detail}); antes tiene que pasar una ejecución real",
   "gate.reason.masked_exit": "el comando oculta su código de salida",
   "gate.reason.no_test_count": "la ejecución no informó cuántas pruebas corrieron",
@@ -27413,8 +27409,6 @@ var pt_BR_default = {
   "gate.verify.gh": "`gh auth login` e depois `finitemonkey gate --task {task}`",
   "gate.verify.rerun": "`finitemonkey gate --task {task}`",
   "gate.human.held_unverified": "Segurei uma vez: {count, plural, one {# verificação não foi feita} other {# verificações não foram feitas}} ({list}). A próxima parada passa e a tarefa continua aberta.",
-  "gate.model.not_run": "O portão do Finite Monkey não rodou: {detail}. Nada foi verificado. Corrija a causa e rode `finitemonkey doctor`.",
-  "gate.human.not_run_held": "O PORTÃO NÃO RODOU: {detail}. Segurei esta parada uma vez; a próxima passa, registrada como não rodada. Rode `finitemonkey doctor`.",
   "error.gate_last_not_run": "A última execução do portão não rodou ({detail}); uma execução real precisa passar antes",
   "gate.reason.masked_exit": "o comando esconde o código de saída",
   "gate.reason.no_test_count": "a execução não informou quantos testes rodaram",
@@ -30578,8 +30572,6 @@ var review_default = {
     "gate.verify.gh": "machine",
     "gate.verify.rerun": "machine",
     "gate.human.held_unverified": "machine",
-    "gate.model.not_run": "machine",
-    "gate.human.not_run_held": "machine",
     "error.gate_last_not_run": "machine",
     "gate.reason.masked_exit": "machine",
     "gate.reason.no_test_count": "machine",
@@ -33740,8 +33732,6 @@ var review_default = {
     "gate.verify.gh": "machine",
     "gate.verify.rerun": "machine",
     "gate.human.held_unverified": "machine",
-    "gate.model.not_run": "machine",
-    "gate.human.not_run_held": "machine",
     "error.gate_last_not_run": "machine",
     "gate.reason.masked_exit": "machine",
     "gate.reason.no_test_count": "machine",
@@ -60803,16 +60793,6 @@ var runGate = (options2, registry = DEFAULT_CHECKS) => {
   return run11;
 };
 
-// src/gate/hooks/session-touched.ts
-import { isAbsolute as isAbsolute7 } from "node:path";
-var insideRepo2 = (file) => file !== "" && !isAbsolute7(file) && !file.startsWith("..");
-var sessionTouchedRepo = (runtime, paths, sessionId) => {
-  if (sessionId === void 0 || sessionId === "") return true;
-  return readEntries2(runtime, signalFiles(paths)).some(
-    (entry2) => entry2.session === sessionId && (entry2.kind === "edit" || entry2.kind === "bash_write") && insideRepo2(entry2.file)
-  );
-};
-
 // src/gate/hooks/stop.ts
 var failureDetail = (t, failure7) => {
   switch (failure7.kind) {
@@ -60942,19 +60922,11 @@ var notRun2 = (input, detail, state) => {
   if (root === void 0) return message;
   const paths = fmPaths(root);
   writeGateStatus(runtime, paths, { status: "not_run", task: "", detail, state });
-  if (readState(runtime, paths).active === void 0 && !sessionTouchedRepo(runtime, paths, input.payload.sessionId))
-    return message;
   const signature = sha256Hex(JSON.stringify(["not_run", detail]));
   const previous = readCounter(runtime, paths);
-  if (previous?.task === NOT_RUN_TASK && previous.signature === signature) return message;
-  if (!saveCounter(runtime, paths, { task: NOT_RUN_TASK, signature, consecutive: 1, same: 1 })) return message;
-  const reason = t("gate.model.not_run", { detail });
-  return {
-    kind: "block",
-    reason,
-    persistent: true,
-    output: { decision: "block", reason, systemMessage: human(t("gate.human.not_run_held", { detail })) }
-  };
+  if (previous?.task === NOT_RUN_TASK && previous.signature === signature) return { kind: "allow" };
+  saveCounter(runtime, paths, { task: NOT_RUN_TASK, signature, consecutive: 1, same: 1 });
+  return message;
 };
 var conclude = (input, run11) => {
   const { t, runtime } = input;
@@ -61886,7 +61858,7 @@ var fileLockRelease = (input) => {
 };
 
 // src/guards/remote/hook.ts
-import { isAbsolute as isAbsolute8, join as join178 } from "node:path";
+import { isAbsolute as isAbsolute7, join as join178 } from "node:path";
 
 // src/guards/remote/http.ts
 var TARGET_LIMIT = 200;
@@ -62284,7 +62256,7 @@ var REMOTE_FEATURE = "remote-destructive";
 var ALLOW11 = { kind: "allow" };
 var SCRIPT_LIMIT_BYTES = 512 * 1024;
 var scriptReader = (input) => (file) => {
-  const path = toAbsolutePath(isAbsolute8(file) ? file : join178(input.cwd, file));
+  const path = toAbsolutePath(isAbsolute7(file) ? file : join178(input.cwd, file));
   const stat = input.runtime.stat(path);
   if (stat?.kind !== "file" || (stat.size ?? 0) > SCRIPT_LIMIT_BYTES) return void 0;
   const text45 = input.runtime.readText(path);
@@ -64657,7 +64629,7 @@ var injectContext = (input, paths, guard, text45, data2) => {
 };
 
 // src/learnings/learn.ts
-import { isAbsolute as isAbsolute9 } from "node:path";
+import { isAbsolute as isAbsolute8 } from "node:path";
 
 // src/signals/line-hashes.ts
 import { createHash as createHash6 } from "node:crypto";
@@ -65007,7 +64979,7 @@ var treeChanged = (runtime, root, lesson) => lesson.tree !== void 0 && lessonTre
 // src/learnings/learn.ts
 var MIN_REPEATS = 2;
 var MAX_FILES9 = 3;
-var insideProject = (file) => file !== "" && !file.startsWith("../") && !isAbsolute9(file);
+var insideProject = (file) => file !== "" && !file.startsWith("../") && !isAbsolute8(file);
 var fixableByEdit = (entry2) => entry2.kind === "error" && SHELL_TOOLS3.has(entry2.tool);
 var fixedSignatures = (entries3) => {
   const errors = /* @__PURE__ */ new Map();
@@ -66675,7 +66647,7 @@ var recordPromptConcepts = (runtime, paths, prompt) => {
 };
 
 // src/git/head-file.ts
-import { isAbsolute as isAbsolute10, join as join189, resolve as resolve3 } from "node:path";
+import { isAbsolute as isAbsolute9, join as join189, resolve as resolve3 } from "node:path";
 var SHA2 = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
 var text38 = (runtime, path) => {
   const read12 = runtime.readText(toAbsolutePath(path));
@@ -66688,7 +66660,7 @@ var gitDirOf = (runtime, root) => {
   if (kind !== "file") return void 0;
   const pointer = /^gitdir:\s*(.+)$/m.exec(text38(runtime, dotGit) ?? "")?.[1]?.trim();
   if (pointer === void 0) return void 0;
-  return isAbsolute10(pointer) ? pointer : resolve3(root, pointer);
+  return isAbsolute9(pointer) ? pointer : resolve3(root, pointer);
 };
 var packedRef = (runtime, dir, ref2) => (text38(runtime, join189(dir, "packed-refs")) ?? "").split("\n").map((line14) => line14.trim().split(" ")).find((parts) => parts[1] === ref2)?.[0];
 var refSha = (runtime, dirs, ref2) => {
@@ -66709,7 +66681,7 @@ var headShaFromFiles = (runtime, root) => {
   const ref2 = /^ref:\s*(\S+)$/.exec(head)?.[1];
   if (ref2 === void 0) return void 0;
   const common = text38(runtime, join189(gitDir, "commondir"));
-  const dirs = common === void 0 ? [gitDir] : [gitDir, isAbsolute10(common) ? common : resolve3(gitDir, common)];
+  const dirs = common === void 0 ? [gitDir] : [gitDir, isAbsolute9(common) ? common : resolve3(gitDir, common)];
   return refSha(runtime, dirs, ref2);
 };
 
@@ -70779,13 +70751,13 @@ var staleDocsStop = (input) => {
 var STALE_DOCS_HANDLERS = { Stop: [staleDocsStop] };
 
 // src/task/contract-hold.ts
-import { isAbsolute as isAbsolute11, relative as relative36 } from "node:path";
+import { isAbsolute as isAbsolute10, relative as relative36 } from "node:path";
 var CONTRACT_HOLD_GUARD = "contract-hold";
 var CONTRACT_HOLD_FILE = "contract-hold.json";
 var allow30 = { kind: "allow" };
 var heldFile = (root, target7) => {
   const rel = toPosixPath(relative36(root, toAbsolutePath(target7, toAbsolutePath(root))));
-  if (rel === "" || rel.startsWith("..") || isAbsolute11(rel)) return void 0;
+  if (rel === "" || rel.startsWith("..") || isAbsolute10(rel)) return void 0;
   return rel.startsWith(".finitemonkey/") || rel.startsWith(".git/") ? void 0 : rel;
 };
 var pendingHash = (runtime, paths, task) => {
@@ -70818,7 +70790,7 @@ var contractHold = (input) => {
 var CONTRACT_HOLD_HANDLERS = { PreToolUse: [contractHold] };
 
 // src/task/scope-hooks.ts
-import { isAbsolute as isAbsolute12, relative as relative37 } from "node:path";
+import { isAbsolute as isAbsolute11, relative as relative37 } from "node:path";
 var SCOPE_GUARD = "scope";
 var FRONT_SCOPE_GUARD = "front-scope";
 var allow31 = { kind: "allow" };
@@ -70828,7 +70800,7 @@ var targetOf5 = (input) => {
 };
 var inside = (root, target7) => {
   const rel = relative37(root, toAbsolutePath(target7, toAbsolutePath(root)));
-  if (rel === "" || rel.startsWith("..") || isAbsolute12(rel)) return void 0;
+  if (rel === "" || rel.startsWith("..") || isAbsolute11(rel)) return void 0;
   const posix23 = toPosixPath(rel);
   return posix23.startsWith(".finitemonkey/") || posix23.startsWith(".git/") ? void 0 : posix23;
 };
@@ -71084,7 +71056,7 @@ var gapOf = (domain, state, events, now) => {
 };
 
 // src/conceitos/probes-run.ts
-import { isAbsolute as isAbsolute13, join as join203 } from "node:path";
+import { isAbsolute as isAbsolute12, join as join203 } from "node:path";
 var PROBES_FILE = "probes.json";
 var RUN_TIMEOUT_MS5 = 3e4;
 var STATUSES = ["open", "right", "wrong", "answered", "skipped", "invalid"];
@@ -71172,7 +71144,7 @@ var execute = (runtime, root, run11, input) => {
   return { exitCode: result2.timedOut || !result2.found ? null : result2.exitCode, stdout: result2.stdout };
 };
 var sourceText2 = (runtime, root, source4) => {
-  if (isAbsolute13(source4) || source4.split(/[\\/]/).includes("..")) return "";
+  if (isAbsolute12(source4) || source4.split(/[\\/]/).includes("..")) return "";
   const text45 = runtime.readText(toAbsolutePath(join203(root, source4)));
   return text45.ok ? text45.value : "";
 };
@@ -72871,7 +72843,7 @@ var instructionFindings = (inventory) => {
 };
 
 // src/instructions/resolve.ts
-import { dirname as dirname38, isAbsolute as isAbsolute14, join as join211, relative as relative39 } from "node:path";
+import { dirname as dirname38, isAbsolute as isAbsolute13, join as join211, relative as relative39 } from "node:path";
 var MAX_IMPORT_HOPS = 4;
 var MAX_WALK_DEPTH = 8;
 var MAX_WALK_DIRS = 3e3;
@@ -73004,14 +72976,14 @@ var baseCandidates = (input, settings) => {
 };
 var resolveImport2 = (input, from, target7) => {
   if (target7.startsWith("~/")) return toAbsolutePath(join211(input.home, ...target7.slice(2).split("/")));
-  if (isAbsolute14(target7)) return toAbsolutePath(target7);
+  if (isAbsolute13(target7)) return toAbsolutePath(target7);
   return toAbsolutePath(join211(dirname38(from), ...target7.split("/")));
 };
 var excluded = (settings, item2) => item2.layer !== "managed" && settings.excludes.some((glob) => globToRegExp(glob).test(toPosixPath(item2.path)));
 var displayPath = (input, path) => {
   const inside2 = (base) => {
     const rel = relative39(base, path);
-    return rel === "" || rel.startsWith("..") || isAbsolute14(rel) ? void 0 : toPosixPath(rel);
+    return rel === "" || rel.startsWith("..") || isAbsolute13(rel) ? void 0 : toPosixPath(rel);
   };
   const project = inside2(input.root);
   if (project !== void 0) return project;
@@ -86028,7 +86000,7 @@ var measureRoute = async (browser, request, route2, options2) => {
 };
 
 // src/look/queries.ts
-import { isAbsolute as isAbsolute15, join as join247 } from "node:path";
+import { isAbsolute as isAbsolute14, join as join247 } from "node:path";
 var N_PLUS_ONE_MIN = 5;
 var STATEMENT = /\b(select|insert|update|delete|with)\b[\s\S]*$/i;
 var queryShape = (sql) => sql.replace(/'(?:[^']|'')*'/g, "?").replace(/"(?:[^"\\]|\\.)*"/g, (quoted7) => /^"\w+"$/.test(quoted7) ? quoted7 : "?").replace(/\$\d+|:\w+|@\w+/g, "?").replace(/\b\d+(?:\.\d+)?\b/g, "?").replace(/\(\s*\?(?:\s*,\s*\?)*\s*\)/g, "(?)").replace(/\s+/g, " ").replace(/\s*;\s*$/, "").trim().toLowerCase();
@@ -86046,7 +86018,7 @@ var countQueries = (text45, min = N_PLUS_ONE_MIN) => {
   const repeated = [...counts2.entries()].filter(([, count13]) => count13 >= min).map(([shape3, count13]) => ({ shape: shape3, count: count13 })).sort((left, right2) => right2.count - left.count || left.shape.localeCompare(right2.shape));
   return { total: statements2.length, repeated };
 };
-var queryLogPath = (root, file) => toAbsolutePath(isAbsolute15(file) ? file : join247(root, file));
+var queryLogPath = (root, file) => toAbsolutePath(isAbsolute14(file) ? file : join247(root, file));
 var fileQueryLog = (runtime, path) => {
   const read12 = () => {
     const text45 = runtime.readText(path);
@@ -88871,7 +88843,7 @@ var onboardCommand = {
 };
 
 // src/commands/organize.ts
-import { isAbsolute as isAbsolute16, join as join251, posix as posix22 } from "node:path";
+import { isAbsolute as isAbsolute15, join as join251, posix as posix22 } from "node:path";
 
 // src/organize/plan.ts
 import { posix as posix20 } from "node:path";
@@ -89135,7 +89107,7 @@ var USAGE26 = "finitemonkey organize [--top <n>] | organize plan <file> | organi
 var DEFAULT_TOP = 10;
 var invalid3 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE26, { detail });
 var relativeFile3 = (ctx, root, raw) => {
-  if (isAbsolute16(raw)) return posix22.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
+  if (isAbsolute15(raw)) return posix22.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
   const prefix2 = ctx.runtime.git(["rev-parse", "--show-prefix"], ctx.cwd);
   return posix22.normalize(`${prefix2.ok ? prefix2.stdout.trim() : ""}${toPosixPath(raw)}`);
 };

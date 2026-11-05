@@ -158,26 +158,24 @@ describe("Stop gate", () => {
     assert.deepEqual(readState(repoRuntime(), fmPaths(repo.root)).done, ["t1"]);
   });
 
-  const heldOnce = async (prepare: (repo: Repo) => Runtime): Promise<void> => {
+  const neverHeld = async (prepare: (repo: Repo) => Runtime): Promise<void> => {
     const repo = setup();
     repo.write("src/a.js", "export const a = 2;\n");
     const runtime = prepare(repo);
     const first = await stop(repo, { runtime });
-    assert.equal(first.verdict, "block");
-    const body = parseBody(first.stdout);
-    assert.match(String(field(body, "reason")), /gate did not run: .*Nothing was verified/);
-    assert.match(String(field(body, "systemMessage")), /GATE DID NOT RUN: .*Held this stop once/);
+    assert.equal(first.verdict, "allow");
+    assert.match(String(field(parseBody(first.stdout), "systemMessage")), /GATE DID NOT RUN/);
+    assert.equal(readGateStatus(repoRuntime(), fmPaths(repo.root))?.status, "not_run");
     const second = await stop(repo, { runtime, active: true });
     assert.equal(second.verdict, "allow");
-    assert.match(String(field(parseBody(second.stdout), "systemMessage")), /GATE DID NOT RUN/);
-    assert.equal(readGateStatus(repoRuntime(), fmPaths(repo.root))?.status, "not_run");
+    assert.equal(field(parseBody(second.stdout), "systemMessage"), undefined);
   };
 
-  it("when the gate cannot run (an unwritable ledger), the stop is held once, then let through as not run", () =>
-    heldOnce(() => repoRuntime({ failAppend: true })));
+  it("when the gate cannot run (an unwritable ledger), the stop goes through and says so once", () =>
+    neverHeld(() => repoRuntime({ failAppend: true })));
 
-  it("when the gate cannot run (a crash), the stop is held once, then let through as not run", () =>
-    heldOnce(() => {
+  it("when the gate cannot run (a crash), the stop goes through and says so once", () =>
+    neverHeld(() => {
       const base = repoRuntime();
       return {
         ...base,
@@ -188,8 +186,8 @@ describe("Stop gate", () => {
       };
     }));
 
-  it("when the gate cannot run (not a repository), the stop is held once, then let through as not run", () =>
-    heldOnce((repo) => {
+  it("when the gate cannot run (not a repository), the stop goes through and says so once", () =>
+    neverHeld((repo) => {
       repo.remove(".git");
       repo.write(".git", "gitdir: /nonexistent/fm-broken\n");
       return repoRuntime();
@@ -223,10 +221,10 @@ describe("Stop gate", () => {
     assert.equal(readGateStatus(repoRuntime(), fmPaths(repo.root))?.status, "not_run");
   });
 
-  it("when the gate cannot run and the session edited a file in the repository, the stop is held once", async () => {
+  it("when the gate cannot run and the session edited a file in the repository, the stop still goes through", async () => {
     const repo = untaskedRepo(editSignal("src/a.js"));
     const outcome = await stop(repo, { runtime: crashingGit() });
-    assert.equal(outcome.verdict, "block");
+    assert.equal(outcome.verdict, "allow");
   });
 
   it("a session that did not touch the tree is not gated", async () => {
