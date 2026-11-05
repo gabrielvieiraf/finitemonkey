@@ -43177,9 +43177,18 @@ var thresholdsOf = (profile) => ({
   undo: Math.max(2, profile.threshold - 1)
 });
 var only2 = (entries3, kind) => entries3.filter((entry2) => entry2.kind === kind);
+var recentRun = (list15, latest4) => {
+  const turns = new Set(list15.map((entry2) => entry2.turn));
+  let first2 = turns.has(latest4) ? latest4 : latest4 - 1;
+  if (!turns.has(first2)) return [];
+  while (turns.has(first2 - 1)) first2 -= 1;
+  return list15.filter((entry2) => entry2.turn >= first2);
+};
 var repeatedError = (entries3) => {
-  const groups = /* @__PURE__ */ new Map();
-  for (const entry2 of only2(entries3, "error")) groups.set(entry2.sig, [...groups.get(entry2.sig) ?? [], entry2]);
+  const latest4 = Math.max(0, ...entries3.map((entry2) => entry2.turn));
+  const all = /* @__PURE__ */ new Map();
+  for (const entry2 of only2(entries3, "error")) all.set(entry2.sig, [...all.get(entry2.sig) ?? [], entry2]);
+  const groups = new Map([...all].map(([sig, list15]) => [sig, recentRun(list15, latest4)]));
   let best;
   for (const [sig, list15] of groups) {
     const last = list15.at(-1);
@@ -43257,10 +43266,7 @@ var pickLines = (output) => {
   const matching2 = body2.filter((line14) => ERROR_LINE.test(line14) && !PASS_LINE.test(line14));
   if (matching2.length > 0) return { lines: matching2.slice(0, MAX_LINES), sample: matching2[0] };
   const tail2 = body2.slice(-TAIL_LINES);
-  return {
-    lines: tail2.length > 0 ? tail2 : all.slice(-TAIL_LINES),
-    sample: status ?? tail2.find((line14) => !PASS_LINE.test(line14)) ?? tail2[0]
-  };
+  return { lines: tail2, sample: status ?? tail2.find((line14) => !PASS_LINE.test(line14)) ?? tail2[0] };
 };
 var errorSignature = (output) => {
   const { lines: raw, sample: first2 } = pickLines(output);
@@ -70580,7 +70586,7 @@ var signalsPrompt = (input) => {
   writeIndex2(scope2, { injections, lastKey: key3 });
   const { t } = input;
   const line14 = contextLine(t, index, thresholdsOf(readProfile(input.runtime, scope2.files)));
-  if (injections < CLEAR_AFTER) return { kind: "allow", output: contextOutput("UserPromptSubmit", line14) };
+  if (injections !== CLEAR_AFTER) return { kind: "allow", output: contextOutput("UserPromptSubmit", line14) };
   const summary2 = pasteSummary(t, index, readState(input.runtime, scope2.paths).active);
   return {
     kind: "allow",

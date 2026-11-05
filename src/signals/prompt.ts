@@ -34,7 +34,7 @@ export const signalsPrompt: HookHandler = (input) => {
   writeIndex(scope, { injections, lastKey: key });
   const { t } = input;
   const line = contextLine(t, index, thresholdsOf(readProfile(input.runtime, scope.files)));
-  if (injections < CLEAR_AFTER) return { kind: "allow", output: contextOutput("UserPromptSubmit", line) };
+  if (injections !== CLEAR_AFTER) return { kind: "allow", output: contextOutput("UserPromptSubmit", line) };
   const summary = pasteSummary(t, index, readState(input.runtime, scope.paths).active);
   return {
     kind: "allow",

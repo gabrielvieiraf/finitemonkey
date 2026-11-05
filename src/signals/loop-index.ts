@@ -50,9 +50,19 @@ type Of<K extends SignalEntry["kind"]> = Extract<SignalEntry, { readonly kind: K
 const only = <K extends SignalEntry["kind"]>(entries: readonly SignalEntry[], kind: K): readonly Of<K>[] =>
   entries.filter((entry): entry is Of<K> => entry.kind === kind);
 
+const recentRun = (list: readonly Of<"error">[], latest: number): readonly Of<"error">[] => {
+  const turns = new Set(list.map((entry) => entry.turn));
+  let first = turns.has(latest) ? latest : latest - 1;
+  if (!turns.has(first)) return [];
+  while (turns.has(first - 1)) first -= 1;
+  return list.filter((entry) => entry.turn >= first);
+};
+
 const repeatedError = (entries: readonly SignalEntry[]): RepeatedError | undefined => {
-  const groups = new Map<string, Of<"error">[]>();
-  for (const entry of only(entries, "error")) groups.set(entry.sig, [...(groups.get(entry.sig) ?? []), entry]);
+  const latest = Math.max(0, ...entries.map((entry) => entry.turn));
+  const all = new Map<string, Of<"error">[]>();
+  for (const entry of only(entries, "error")) all.set(entry.sig, [...(all.get(entry.sig) ?? []), entry]);
+  const groups = new Map([...all].map(([sig, list]) => [sig, recentRun(list, latest)] as const));
   let best: RepeatedError | undefined;
   for (const [sig, list] of groups) {
     const last = list.at(-1);

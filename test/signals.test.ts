@@ -161,6 +161,12 @@ describe("signals: second loop and calibration", () => {
     assert.match(systemOf(second), /second loop in this session\. A \/clear and a new request/);
     assert.match(systemOf(second), /Error [0-9a-f]{4} seen 4 times: FAIL test\/checkout\.test\.ts/);
     assert.match(systemOf(second), /Files edited: src\/checkout\.ts/);
+    await fire(fs, "PostToolUseFailure", {
+      tool_name: "Bash",
+      error: "FAIL test/checkout.test.ts > total in cents (9 ms)\n AssertionError: expected 1203 to be 1000",
+    });
+    const third = await fire(fs, "UserPromptSubmit", { prompt: "And a fifth way" });
+    assert.doesNotMatch(systemOf(third), /\/clear/);
   });
 
   it("a not-loop answer raises the threshold so the same repeats no longer fire", async () => {
