@@ -46,10 +46,7 @@ const pickLines = (output: string): ErrorLines => {
   const matching = body.filter((line) => ERROR_LINE.test(line) && !PASS_LINE.test(line));
   if (matching.length > 0) return { lines: matching.slice(0, MAX_LINES), sample: matching[0] };
   const tail = body.slice(-TAIL_LINES);
-  return {
-    lines: tail.length > 0 ? tail : all.slice(-TAIL_LINES),
-    sample: status ?? tail.find((line) => !PASS_LINE.test(line)) ?? tail[0],
-  };
+  return { lines: tail, sample: status ?? tail.find((line) => !PASS_LINE.test(line)) ?? tail[0] };
 };
 
 export const errorSignature = (output: string): ErrorSignature | undefined => {

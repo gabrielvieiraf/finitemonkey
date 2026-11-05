@@ -28,7 +28,6 @@ describe("signals: the error sample is the failing line, never passing output", 
     ],
     ["Exit code 1\nsrc/mod/labels.ts\n?? .finitemonkey/git/\n?? src/mod/labels.ts", "Exit code 1"],
     ["Exit code 1\n#455\n#456\n\n[exited with code 1]\n#455\n#456", "Exit code 1"],
-    ["Exit code 144", "Exit code 144"],
     ["Exit code 1\n(eval):1: parse error near `>'", "(eval):1: parse error near `>'"],
     [
       "tail: cannot open '/tmp/claude-1000/st.txt' for reading: No such file or directory",
@@ -60,6 +59,11 @@ describe("signals: the error sample is the failing line, never passing output", 
       "[exited with code 1]",
     ])
       assert.equal(samples.includes(junk), false, junk);
+  });
+
+  it("gives no signature to a failure that printed only its exit status", () => {
+    assert.equal(errorSignature("Exit code 144"), undefined);
+    assert.equal(errorSignature("Exit code 1\n\n[exited with code 1]"), undefined);
   });
 
   it("gives the same failure the same signature and different silent failures different ones", () => {
